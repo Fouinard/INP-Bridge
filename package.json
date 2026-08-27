@@ -1,0 +1,29 @@
+{
+  "name": "api-edt-inp-grenoble",
+  "version": "1.0.0",
+  "description": "Une application exclusivement pour Android permettant de visualiser l'emploi du temps, d'accéder à son adresse mail académique...",
+  "homepage": "https://github.com/Fouinard/INP-Grenoble#readme",
+  "bugs": {
+    "url": "https://github.com/Fouinard/INP-Grenoble/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fouinard/INP-Grenoble.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc && node dist/index.js"
+  },
+  "devDependencies": {
+    "@types/node": "^26.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "ical.js": "^2.2.1"
+  }
+}
