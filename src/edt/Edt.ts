@@ -14,21 +14,14 @@ export class EDT {
         this.resources = resources
     }
 
-    private getCurrentWeekdays() {
-        const today = new Date(2026, 8, 15)
-
-        // Copie pour éviter de modifier today
+    private getWeekdays(date?: Date) {
+        const today = date || new Date()
         const monday = new Date(today)
         const day = today.getDay()
-
-        // Dimanche = 0 → on considère qu'il appartient à la semaine précédente
         const diffToMonday = day === 0 ? -6 : 1 - day
-
         monday.setDate(today.getDate() + diffToMonday)
-
         const friday = new Date(monday)
         friday.setDate(monday.getDate() + 4)
-
         return {
             startDay: monday.getDate(),
             startMonth: monday.getMonth() + 1,
@@ -71,19 +64,18 @@ export class EDT {
                     Authorization: "Basic " + btoa(`${process.env.USERNAME_AGALAN}:${process.env.PASSWORD_AGALAN}`)
                 }
             }
-        )
-        const icsText = await icsFile.text()
-        return this.parseIcalText(icsText)
+        );
+        const icsText = await icsFile.text();
+        return this.parseIcalText(icsText);
     }
 
-    private async fetchWithHeaders(endpoint: string, authorization: string, referer: string, method: string, contentType: string, body: string, cookies: string) {
-        const res = await fetch(endpoint, {
-            headers: {
+    private async fetchWithHeaders(endpoint: string, authorization: string, referer: string, method: string, contentType: string | null, body: string | BodyInit | null, cookies: string) {
+        const req = new Request(endpoint, {
+            "headers": {
                 "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
                 "accept-language": "en-US,en;q=0.9,fr;q=0.8,fr-FR;q=0.7,en-GB;q=0.6,it-IT;q=0.5,it;q=0.4,af;q=0.3",
                 "cache-control": "no-cache",
-                Authorization: authorization,
-                "content-type": contentType,
+                "Authorization": authorization,
                 "pragma": "no-cache",
                 "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Microsoft Edge\";v=\"151\", \"Chromium\";v=\"151\"",
                 "sec-ch-ua-mobile": "?0",
@@ -95,130 +87,74 @@ export class EDT {
                 "cookie": cookies,
                 "Referer": referer
             },
-            "method": method
-        })
-        return res
+            "method": method,
+            "body": body
+        });
+        if(contentType) req.headers.set("content-type", contentType);
+        const res = await fetch(endpoint, req);
+        return res;
     }
 
-    async getCurrentWeek() {
+    async getWeekLessons(date?: Date) {
         const sessionResponse = await fetch(
             `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/direct_planning.jsp`,
             {
                 headers: {
                     Authorization: "Basic " + btoa(`${process.env.USERNAME_AGALAN}:${process.env.PASSWORD_AGALAN}`),
-                    Referer: "https://edt.grenoble-inp.fr/"
+                    Referer: `https://${this.endpoint}/`
                 },
                 method: "GET"
             }
-        )
-        const setCookies = sessionResponse.headers.getSetCookie()
-        const validateSession = await fetch("https://edt.grenoble-inp.fr/2026-2027/prepaINPGrenoble/etudiant/jsp/custom/modules/plannings/direct_planning.jsp", {
-            "headers": {
-                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-                "accept-language": "en-US,en;q=0.9,fr;q=0.8,fr-FR;q=0.7,en-GB;q=0.6,it-IT;q=0.5,it;q=0.4,af;q=0.3",
-                "cache-control": "no-cache",
-                Authorization: "Basic " + btoa(`${process.env.USERNAME_AGALAN}:${process.env.PASSWORD_AGALAN}`),
-                "content-type": "application/x-www-form-urlencoded",
-                "pragma": "no-cache",
-                "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Microsoft Edge\";v=\"151\", \"Chromium\";v=\"151\"",
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": "\"Windows\"",
-                "sec-fetch-dest": "document",
-                "sec-fetch-mode": "navigate",
-                "sec-fetch-site": "same-origin",
-                "upgrade-insecure-requests": "1",
-                "cookie": setCookies.join("; "),
-                "Referer": "https://edt.grenoble-inp.fr/2026-2027/prepaINPGrenoble/etudiant/jsp/standard/direct_planning.jsp"
-            },
-            "method": "POST"
-        })
-        const validateCookies = validateSession.headers.getSetCookie()
-        fetch("https://edt.grenoble-inp.fr/2026-2027/prepaINPGrenoble/etudiant/jsp/standard/gui/tree.jsp?category=trainee&expand=false&forceLoad=false&reload=false&scroll=0", {
-            "headers": {
-                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-                "accept-language": "en-US,en;q=0.9,fr;q=0.8,fr-FR;q=0.7,en-GB;q=0.6,it-IT;q=0.5,it;q=0.4,af;q=0.3",
-                Authorization: "Basic " + btoa(`${process.env.USERNAME_AGALAN}:${process.env.PASSWORD_AGALAN}`),
-                "cache-control": "no-cache",
-                "pragma": "no-cache",
-                "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Microsoft Edge\";v=\"151\", \"Chromium\";v=\"151\"",
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": "\"Windows\"",
-                "sec-fetch-dest": "frame",
-                "sec-fetch-mode": "navigate",
-                "sec-fetch-site": "same-origin",
-                "sec-fetch-user": "?1",
-                "upgrade-insecure-requests": "1",
-                "cookie": setCookies.join("; "),
-                "Referer": "https://edt.grenoble-inp.fr/2026-2027/prepaINPGrenoble/etudiant/jsp/standard/gui/tree.jsp?forceLoad=false&isDirect=true"
-            },
-            "body": null,
-            "method": "GET"
-        })
-        fetch("https://edt.grenoble-inp.fr/2026-2027/prepaINPGrenoble/etudiant/jsp/standard/gui/tree.jsp?branchId=7&expand=false&forceLoad=false&reload=false&scroll=0", {
-            "headers": {
-                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-                "accept-language": "en-US,en;q=0.9,fr;q=0.8,fr-FR;q=0.7,en-GB;q=0.6,it-IT;q=0.5,it;q=0.4,af;q=0.3",
-                Authorization: "Basic " + btoa(`${process.env.USERNAME_AGALAN}:${process.env.PASSWORD_AGALAN}`),
-                "cache-control": "no-cache",
-                "pragma": "no-cache",
-                "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Microsoft Edge\";v=\"151\", \"Chromium\";v=\"151\"",
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": "\"Windows\"",
-                "sec-fetch-dest": "frame",
-                "sec-fetch-mode": "navigate",
-                "sec-fetch-site": "same-origin",
-                "sec-fetch-user": "?1",
-                "upgrade-insecure-requests": "1",
-                "cookie": setCookies.join("; "),
-                "Referer": "https://edt.grenoble-inp.fr/2026-2027/prepaINPGrenoble/etudiant/jsp/standard/gui/tree.jsp?category=trainee&expand=false&forceLoad=false&reload=false&scroll=0"
-            },
-            "body": null,
-            "method": "GET"
-        })
-        fetch("https://edt.grenoble-inp.fr/2026-2027/prepaINPGrenoble/etudiant/jsp/standard/gui/tree.jsp?branchId=3719&expand=false&forceLoad=false&reload=false&scroll=0", {
-            "headers": {
-                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-                "accept-language": "en-US,en;q=0.9,fr;q=0.8,fr-FR;q=0.7,en-GB;q=0.6,it-IT;q=0.5,it;q=0.4,af;q=0.3",
-                Authorization: "Basic " + btoa(`${process.env.USERNAME_AGALAN}:${process.env.PASSWORD_AGALAN}`),
-                "cache-control": "no-cache",
-                "pragma": "no-cache",
-                "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Microsoft Edge\";v=\"151\", \"Chromium\";v=\"151\"",
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": "\"Windows\"",
-                "sec-fetch-dest": "frame",
-                "sec-fetch-mode": "navigate",
-                "sec-fetch-site": "same-origin",
-                "sec-fetch-user": "?1",
-                "upgrade-insecure-requests": "1",
-                "cookie": setCookies.join("; "),
-                "Referer": "https://edt.grenoble-inp.fr/2026-2027/prepaINPGrenoble/etudiant/jsp/standard/gui/tree.jsp?branchId=7&expand=false&forceLoad=false&reload=false&scroll=0"
-            },
-            "body": null,
-            "method": "GET"
-        })
-        await fetch("https://edt.grenoble-inp.fr/2026-2027/prepaINPGrenoble/etudiant/jsp/standard/gui/tree.jsp?selectId=1130&reset=false&forceLoad=false&scroll=0", {
-            "headers": {
-                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-                "accept-language": "en-US,en;q=0.9,fr;q=0.8,fr-FR;q=0.7,en-GB;q=0.6,it-IT;q=0.5,it;q=0.4,af;q=0.3",
-                Authorization: "Basic " + btoa(`${process.env.USERNAME_AGALAN}:${process.env.PASSWORD_AGALAN}`),
-                "cache-control": "no-cache",
-                "pragma": "no-cache",
-                "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Microsoft Edge\";v=\"151\", \"Chromium\";v=\"151\"",
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": "\"Windows\"",
-                "sec-fetch-dest": "frame",
-                "sec-fetch-mode": "navigate",
-                "sec-fetch-site": "same-origin",
-                "sec-fetch-user": "?1",
-                "upgrade-insecure-requests": "1",
-                "cookie": setCookies.join("; "),
-                "Referer": "https://edt.grenoble-inp.fr/2026-2027/prepaINPGrenoble/etudiant/jsp/standard/gui/tree.jsp?branchId=3719&expand=false&forceLoad=false&reload=false&scroll=0"
-            },
-            "body": null,
-            "method": "GET"
-        })
+        );
+        const setCookies = sessionResponse.headers.getSetCookie();
+        const validateSession = await this.fetchWithHeaders(
+            `https://${this.endpoint}/${this.year}/prepaINPGrenoble/etudiant/jsp/custom/modules/plannings/direct_planning.jsp`,
+            "Basic " + btoa(`${process.env.USERNAME_AGALAN}:${process.env.PASSWORD_AGALAN}`),
+            `https://${this.endpoint}/${this.year}/prepaINPGrenoble/etudiant/jsp/standard/direct_planning.jsp`,
+            "POST",
+            "application/x-www-form-urlencoded",
+            null,
+            setCookies.join("; ")
+        );
+        const validateCookies = validateSession.headers.getSetCookie();
+        await this.fetchWithHeaders(
+            `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?category=trainee&expand=false&forceLoad=false&reload=false&scroll=0`,
+            "Basic " + btoa(`${process.env.USERNAME_AGALAN}:${process.env.PASSWORD_AGALAN}`),
+            `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?forceLoad=false&isDirect=true`,
+            "GET",
+            null,
+            null,
+            setCookies.join("; ")
+        );
+        await this.fetchWithHeaders(
+            `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?branchId=7&expand=false&forceLoad=false&reload=false&scroll=0`,
+            "Basic " + btoa(`${process.env.USERNAME_AGALAN}:${process.env.PASSWORD_AGALAN}`),
+            `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?category=trainee&expand=false&forceLoad=false&reload=false&scroll=0`,
+            "GET",
+            null,
+            null,
+            setCookies.join("; ")
+        );
+        await this.fetchWithHeaders(
+            `https://${this.endpoint}/2026-2027/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?branchId=3719&expand=false&forceLoad=false&reload=false&scroll=0`,
+            "Basic " + btoa(`${process.env.USERNAME_AGALAN}:${process.env.PASSWORD_AGALAN}`),
+            `https://${this.endpoint}/2026-2027/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?branchId=7&expand=false&forceLoad=false&reload=false&scroll=0`,
+            "GET",
+            null,
+            null,
+            setCookies.join("; ")
+        );
+        await this.fetchWithHeaders(
+            `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?selectId=1130&reset=false&forceLoad=false&scroll=0`,
+            "Basic " + btoa(`${process.env.USERNAME_AGALAN}:${process.env.PASSWORD_AGALAN}`),
+            `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?branchId=3719&expand=false&forceLoad=false&reload=false&scroll=0`,
+            "GET",
+            null,
+            null,
+            setCookies.join("; ")
+        );
 
-        const week = this.getCurrentWeekdays()
+        const week = this.getWeekdays(date);
         const body = new URLSearchParams({
             clearTree: "false",
 
@@ -231,43 +167,19 @@ export class EDT {
             endYear: this.formatNumber(week.endYear),
 
             calType: "ical",
-
             x: "34",
             y: "5"
         });
-        console.log(body)
-        console.log(`https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/custom/modules/plannings/ical.jsp`)
-        const response = await fetch(
+        const response = await this.fetchWithHeaders(
             `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/custom/modules/plannings/ical.jsp`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization:
-                        "Basic " +
-                        Buffer
-                            .from(
-                                `${process.env.USERNAME_AGALAN}:${process.env.PASSWORD_AGALAN}`
-                            )
-                            .toString("base64"),
-
-                    "Content-Type": "application/x-www-form-urlencoded",
-
-                    Referer:
-                        `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/custom/modules/plannings/icalDates.jsp?clearTree=false`,
-                    Cookie: setCookies.concat(validateCookies).join("; ")
-                },
-                body,
-
-            }
-        )
-        console.log("status:", response.status);
-        console.log("headers:");
-
-        for (const [key, value] of response.headers) {
-            console.log(key, ":", value);
-        }
+            "Basic " + btoa(`${process.env.USERNAME_AGALAN}:${process.env.PASSWORD_AGALAN}`),
+            `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/custom/modules/plannings/icalDates.jsp?clearTree=false`,
+            "POST",
+            "application/x-www-form-urlencoded",
+            body,
+            setCookies.concat(validateCookies).join("; ")
+        );
         const icsText = await response.text();
-        console.log(icsText)
-        return this.parseIcalText(icsText)
+        return this.parseIcalText(icsText);
     }
 }

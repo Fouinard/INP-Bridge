@@ -4,6 +4,6 @@ dotenv.config()
 import { EDT } from "./edt/Edt.js"
 
 const edt = new EDT()
-edt.getCurrentWeek().then(edt => {
+edt.getWeekLessons(new Date(2026,8,15)).then(edt => {
     console.log(edt)
 })
