@@ -1,16 +1,14 @@
+import Class from "@/components/schedule/Class";
 import { Text, View } from "react-native";
-import BottomNavBar from "@/components/BottomNavBar";
 
 export default function TestPage1() {
     return (
         <View
-            style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-            }}
         >
             <Text>Page de tests (composants etc)</Text>
+            <View className="px-4">
+                <Class classData={{ startDate: new Date(), endDate: new Date(), teacher: "Prof 1", subject: "Maths", room: "Salle 1" }} backgroundColor={"#FF0000"} accentColor={"#FF0000"} />
+            </View>
         </View>
     );
 }
