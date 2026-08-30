@@ -3,17 +3,17 @@
 @tailwind utilities;
 
 @layer utilities {
-  .font-inter {
-    font-family: 'Inter', sans-serif;
-  }
-  
-  .font-inter-mixed {
-    font-family: 'Inter', sans-serif;
-    font-weight: 200;
-  }
-  
-  .font-inter-medium {
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-  }
+    .font-inter {
+        font-family: 'Inter', sans-serif;
+    }
+
+    .font-inter-mixed {
+        font-family: 'Inter', sans-serif;
+        font-weight: 200;
+    }
+
+    .font-inter-medium {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+    }
 }

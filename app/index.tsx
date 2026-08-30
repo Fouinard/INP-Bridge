@@ -1,24 +1,16 @@
 import { Button, Text, View } from "react-native";
-import BottomNavBar from "@/components/BottomNavBar";
 import { Link } from "expo-router";
 
 export default function Index() {
     return (
-        <View
-            style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-            }}
-        >
-            <Text>Edit app/index.tsx to edit this screen.</Text>
-            <Link href="/dev/test1" style={{}}>
+        <View className="flex-1 justify-center items-center bg-gray-800">
+            <Text className="text-white">Edit app/index.tsx to edit this screen.</Text>
+            <Link href="/dev/test1" className="text-white">
                Test1
             </Link>
-            <Link href="/dev/test2" style={{}}>
+            <Link href="/dev/test2" className="text-white">
                Test2
             </Link>
-            <BottomNavBar />
         </View>
     );
 }
