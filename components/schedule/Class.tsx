@@ -33,18 +33,18 @@ export default function (props: ClassProps) {
             <View className="bg-dynamic/33 flex-1 gap-3 flex-row rounded-[20px] h-full p-3" style={getHueStyle(hue)}>
                 <View className="bg-dynamic h-full w-[6px] rounded-full "></View>
                 <View className="flex-1 h-full flex-col justify-between">
-                    <Text className="text-primary font-inter font-medium text-base">{props.classData.subject}</Text>
+                    <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{props.classData.subject}</Text>
                     <View className=" flex flex-row items-center gap-1.5">
                         <MapPin className="fill-primary size-[17px]" />
-                        <Text className="text-primary font-inter font-medium text-base">{props.classData.room}</Text>
+                        <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{props.classData.room}</Text>
                     </View>
                     <View className="flex flex-row items-center gap-1.5">
                         <User className="fill-primary size-[17px]" />
-                        <Text className="text-primary font-inter font-medium text-base">{props.classData.teacher}</Text>
+                        <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{props.classData.teacher}</Text>
                     </View>
                     <View className="flex flex-row items-center gap-1.5">
                         <Clock className="fill-primary size-[17px]" />
-                        <Text className="text-primary font-inter font-medium text-base">{`${duration.heures}h${duration.minutes}`}</Text>
+                        <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{`${duration.heures}h${duration.minutes}`}</Text>
                     </View>
                 </View>
             </View>
