@@ -10,7 +10,6 @@ export default function () {
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    today.setDate(today.getDate() + 1);
 
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
