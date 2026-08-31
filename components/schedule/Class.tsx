@@ -1,9 +1,8 @@
-import { generateRandomHue, getHueStyle } from "@/utils/RandomColor";
+import { getHueFromString, getHueStyle } from "@/utils/RandomColor";
 import { formatTime, getDurationFormatted } from "@/utils/Time";
 import { Clock, MapPin, User } from "@getpapillon/papicons";
 import { useState } from "react";
 import { ColorValue, Text, View } from "react-native";
-import { vars } from 'nativewind';
 
 interface ClassData {
     startDate: Date,
@@ -21,31 +20,31 @@ interface ClassProps {
 
 export default function (props: ClassProps) {
 
-    const [hue] = useState(() => generateRandomHue());
+    const [hue] = useState(() => getHueFromString(props.classData.subject));
     const [duration] = useState(() => getDurationFormatted(props.classData.startDate, props.classData.endDate));
 
 
     return (
         <View className="flex flex-row w-full h-32 gap-4">
             <View className="flex flex-col items-end w-1/5 h-full">
-                <Text className="font-inter font-medium text-xl">{formatTime(props.classData.startDate)}</Text>
-                <Text className="font-inter font-extralight text-base">{formatTime(props.classData.endDate)}</Text>
+                <Text className="text-primary font-inter font-medium text-xl">{formatTime(props.classData.startDate)}</Text>
+                <Text className="text-primary font-inter font-extralight text-base">{formatTime(props.classData.endDate)}</Text>
             </View>
             <View className="bg-dynamic/33 flex-1 gap-3 flex-row rounded-[20px] h-full p-3" style={getHueStyle(hue)}>
                 <View className="bg-dynamic h-full w-[6px] rounded-full "></View>
                 <View className="flex-1 h-full flex-col justify-between">
-                    <Text className="font-inter font-medium text-base">{props.classData.subject}</Text>
+                    <Text className="text-primary font-inter font-medium text-base">{props.classData.subject}</Text>
                     <View className=" flex flex-row items-center gap-1.5">
-                        <MapPin size={17} />
-                        <Text className="font-inter font-medium text-base">{props.classData.room}</Text>
+                        <MapPin className="fill-primary size-[17px]" />
+                        <Text className="text-primary font-inter font-medium text-base">{props.classData.room}</Text>
                     </View>
                     <View className="flex flex-row items-center gap-1.5">
-                        <User size={17} />
-                        <Text className="font-inter font-medium text-base">{props.classData.teacher}</Text>
+                        <User className="fill-primary size-[17px]" />
+                        <Text className="text-primary font-inter font-medium text-base">{props.classData.teacher}</Text>
                     </View>
                     <View className="flex flex-row items-center gap-1.5">
-                        <Clock size={17} />
-                        <Text className="font-inter font-medium text-base">{`${duration.heures}h${duration.minutes}`}</Text>
+                        <Clock className="fill-primary size-[17px]" />
+                        <Text className="text-primary font-inter font-medium text-base">{`${duration.heures}h${duration.minutes}`}</Text>
                     </View>
                 </View>
             </View>

@@ -4,7 +4,7 @@
 
 @layer base {
     :root {
-
+        --primary: #FFFFFF;
         --s: 80%;
         --l: 70%;
     }
