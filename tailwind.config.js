@@ -9,7 +9,19 @@ module.exports = {
             fontFamily: {
                 inter: ['InterVariable', 'sans-serif'],
             },
-            colors: {...colors},
+            opacity: {
+                '33': '0.33',
+                '66': '0.66',
+            },
+            colors: {
+                ...colors,
+                dynamic: ({ opacityValue }) => {
+                    if (opacityValue !== undefined) {
+                        return `hsl(var(--h) var(--s) var(--l) / ${opacityValue})`;
+                    }
+                    return `hsl(var(--h) var(--s) var(--l))`;
+                }
+            },
         }
     },
     plugins: [],
