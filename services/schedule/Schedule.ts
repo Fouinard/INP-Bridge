@@ -95,6 +95,7 @@ export class Schedule {
 
     private async fetchWithHeaders(endpoint: string, authorization: string, referer: string, method: string, contentType: string | null, body: string | BodyInit | null, cookies: string) {
         const req = new Request(endpoint, {
+            "credentials": "omit",
             "headers": {
                 "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
                 "accept-language": "en-US,en;q=0.9,fr;q=0.8,fr-FR;q=0.7,en-GB;q=0.6,it-IT;q=0.5,it;q=0.4,af;q=0.3",
@@ -119,12 +120,19 @@ export class Schedule {
         return res;
     }
 
+    private async delay(ms: number) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     async getWeekLessons(date?: Date) {
+        console.log(`https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/direct_planning.jsp`)
         const sessionResponse = await fetch(
             `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/direct_planning.jsp`,
             {
+                credentials: "omit",
                 headers: {
                     Authorization: "Basic " + btoa(`${this.username}:${this.password}`),
+                    "cache-control": "no-cache",
                     Referer: `https://${this.endpoint}/`
                 },
                 method: "GET"
@@ -145,7 +153,8 @@ export class Schedule {
         );
         const validateCookies = typeof validateSession.headers.getSetCookie === "function" ? validateSession.headers.getSetCookie() : [validateSession.headers.get("set-cookie")].filter(Boolean);
         console.log(validateCookies)
-        await this.fetchWithHeaders(
+        await this.delay(500)
+        const test1 = await this.fetchWithHeaders(
             `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?category=trainee&expand=false&forceLoad=false&reload=false&scroll=0`,
             "Basic " + btoa(`${this.username}:${this.password}`),
             `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?forceLoad=false&isDirect=true`,
@@ -154,7 +163,8 @@ export class Schedule {
             null,
             setCookies.join("; ")
         );
-        await this.fetchWithHeaders(
+        await this.delay(500)
+        const test2 = await this.fetchWithHeaders(
             `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?branchId=7&expand=false&forceLoad=false&reload=false&scroll=0`,
             "Basic " + btoa(`${this.username}:${this.password}`),
             `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?category=trainee&expand=false&forceLoad=false&reload=false&scroll=0`,
@@ -163,7 +173,8 @@ export class Schedule {
             null,
             setCookies.join("; ")
         );
-        await this.fetchWithHeaders(
+        await this.delay(500)
+        const test3 = await this.fetchWithHeaders(
             `https://${this.endpoint}/2026-2027/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?branchId=3719&expand=false&forceLoad=false&reload=false&scroll=0`,
             "Basic " + btoa(`${this.username}:${this.password}`),
             `https://${this.endpoint}/2026-2027/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?branchId=7&expand=false&forceLoad=false&reload=false&scroll=0`,
@@ -172,7 +183,8 @@ export class Schedule {
             null,
             setCookies.join("; ")
         );
-        await this.fetchWithHeaders(
+        await this.delay(500)
+        const test4 = await this.fetchWithHeaders(
             `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?selectId=1130&reset=false&forceLoad=false&scroll=0`,
             "Basic " + btoa(`${this.username}:${this.password}`),
             `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?branchId=3719&expand=false&forceLoad=false&reload=false&scroll=0`,
@@ -181,6 +193,12 @@ export class Schedule {
             null,
             setCookies.join("; ")
         );
+        await this.delay(500)
+
+        console.log(await test1.text())
+        console.log(await test2.text())
+        console.log(await test3.text())
+        console.log(await test4.text())
 
         const week = this.getWeekdays(date);
         const body = new URLSearchParams({
@@ -195,20 +213,44 @@ export class Schedule {
             endYear: this.formatNumber(week.endYear),
 
             calType: "ical",
-            x: "34",
-            y: "5"
+            x: "25",
+            y: "3"
         });
         console.log(body.toString());
-        const response = await this.fetchWithHeaders(
-            `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/custom/modules/plannings/ical.jsp`,
-            "Basic " + btoa(`${this.username}:${this.password}`),
-            `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/custom/modules/plannings/icalDates.jsp?clearTree=false`,
-            "POST",
-            "application/x-www-form-urlencoded",
-            body,
-            setCookies.concat(validateCookies).join("; ")
-        );
+        console.log(setCookies.concat(validateCookies).join("; "));
+        // const response = await this.fetchWithHeaders(
+        //     `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/custom/modules/plannings/ical.jsp`,
+        //     "Basic " + btoa(`${this.username}:${this.password}`),
+        //     `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/custom/modules/plannings/icalDates.jsp?clearTree=false`,
+        //     "POST",
+        //     "application/x-www-form-urlencoded",
+        //     body,
+        //     setCookies.concat(validateCookies).join("; ")
+        // );
+        const response = await fetch(`https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/custom/modules/plannings/ical.jsp`, {
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                "accept-language": "en-US,en;q=0.9,fr;q=0.8,fr-FR;q=0.7,en-GB;q=0.6,it-IT;q=0.5,it;q=0.4,af;q=0.3",
+                "authorization": "Basic " + btoa(`${this.username}:${this.password}`),
+                "cache-control": "no-cache",
+                "content-type": "application/x-www-form-urlencoded",
+                "pragma": "no-cache",
+                "sec-ch-ua": "\"Chromium\";v=\"152\", \"Not?A_Brand\";v=\"24\", \"Microsoft Edge\";v=\"152\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "document",
+                "sec-fetch-mode": "navigate",
+                "sec-fetch-site": "same-origin",
+                "sec-fetch-user": "?1",
+                "upgrade-insecure-requests": "1",
+                "cookie": setCookies.concat(validateCookies).join("; "),
+                "Referer": `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/custom/modules/plannings/icalDates.jsp?clearTree=false`
+            },
+            "body": "clearTree=false&startDay=31&startMonth=08&startYear=2026&endDay=04&endMonth=09&endYear=2026&calType=ical&x=34&y=2",
+            "method": "POST"
+        });
         const icsText = await response.text();
+        console.log(icsText);
         return this.parseIcalText(icsText) as Lesson[];
     }
 }
