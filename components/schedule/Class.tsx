@@ -21,7 +21,7 @@ interface ClassProps {
 export default function (props: ClassProps) {
 
     const [hue] = useState(() => getHueFromString(props.classData.subject));
-    const [duration] = useState(() => getDurationFormatted(props.classData.startDate, props.classData.endDate));
+    const duration = getDurationFormatted(props.classData.startDate, props.classData.endDate)
 
 
     return (
@@ -35,15 +35,15 @@ export default function (props: ClassProps) {
                 <View className="flex-1 h-full flex-col justify-between">
                     <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{props.classData.subject}</Text>
                     <View className=" flex flex-row items-center gap-1.5">
-                        <MapPin className="fill-primary size-[17px]" />
+                        <MapPin className="fill-primary size-[17px]" color="white" />
                         <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{props.classData.room}</Text>
                     </View>
                     <View className="flex flex-row items-center gap-1.5">
-                        <User className="fill-primary size-[17px]" />
+                        <User className="fill-primary size-[17px]" color="white" />
                         <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{props.classData.teacher}</Text>
                     </View>
                     <View className="flex flex-row items-center gap-1.5">
-                        <Clock className="fill-primary size-[17px]" />
+                        <Clock className="fill-primary size-[17px]" color="white" />
                         <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{`${duration.heures}h${duration.minutes}`}</Text>
                     </View>
                 </View>

@@ -18,7 +18,7 @@ export class Schedule {
     username: string | null;
     password: string | null;
 
-    constructor(endpoint = "edt.grenoble-inp.fr", year = "2026-2027", type = "etudiant", location = "prepaINPGrenoble", resources = 1130) {
+    constructor(endpoint = "edt.grenoble-inp.fr", year = "2026-2027", type = "etudiant", location = "prepaINPGrenoble", resources = 1198) {
         this.endpoint = endpoint;
         this.year = year;
         this.type = type;
