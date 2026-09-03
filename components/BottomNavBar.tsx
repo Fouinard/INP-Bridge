@@ -3,6 +3,7 @@ import { Calendar, TextBubble, Gears, Home } from "@getpapillon/papicons"
 import { Link, RelativePathString, usePathname } from "expo-router";
 
 export default function () {
+    const disabledPathnames = ["/startup"]
     const pathname = usePathname();
     const navBar = [
         {
@@ -24,7 +25,7 @@ export default function () {
         }
     ]
     return (
-        <View className="w-full flex-row justify-center items-center">
+        <View className="w-full flex-row justify-center items-center" style={{ display: disabledPathnames.includes(pathname) ? "none" : "flex"}}>
             <View className="flex-row w-4/5 justify-around p-2 bg-black rounded-[36px] absolute bottom-[4.5rem]">
                 {navBar.map((item, index) => {
                     return (
