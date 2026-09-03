@@ -101,7 +101,6 @@ export default function () {
                             a.start.getTime() - b.start.getTime()
                     )
                     .map((lesson, index) => (
-                        console.log(lesson.description),
                         <Class
                             key={`${lesson.start}+${lesson.title}+${index}`}
                             classData={{
