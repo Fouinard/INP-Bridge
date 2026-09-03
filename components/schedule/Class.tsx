@@ -9,7 +9,8 @@ interface ClassData {
     endDate: Date,
     teacher: string,
     subject: string,
-    room: string
+    room: string,
+    classType?: "TD" | "CM" | "TP" | null
 }
 
 interface ClassProps {
@@ -54,6 +55,9 @@ export default function (props: ClassProps) {
                             <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{`${duration.heures}h${duration.minutes}`}</Text>
                         </View>
                     </ScrollView>
+                    {props.classData.classType && <Text className="bg-primary text-dynamic font-inter font-medium text-base absolute top-3 right-3 px-2 py-1 rounded-full">{props.classData.classType}</Text>}
+        
+
                 </View>
             </View>
         </View>

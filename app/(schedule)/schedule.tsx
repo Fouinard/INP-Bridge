@@ -110,6 +110,7 @@ export default function () {
                                 room: lesson.location,
                                 subject: lesson.title,
                                 teacher: lesson.description.match(/^[^\d\n]+$/gm)?.[0] || "N/A",
+                                classType: lesson.description.match(/(?<=_)(CM|TD|TP)(?=_)/)?.[0] as "CM" | "TD" | "TP" || null,
                             }}
                         />
                     ))}
