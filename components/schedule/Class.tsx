@@ -2,7 +2,7 @@ import { getHueFromString, getHueStyle } from "@/utils/RandomColor";
 import { formatTime, getDurationFormatted } from "@/utils/Time";
 import { Clock, MapPin, User } from "@getpapillon/papicons";
 import { useState } from "react";
-import { ColorValue, Text, View } from "react-native";
+import { ColorValue, ScrollView, Text, View } from "react-native";
 
 interface ClassData {
     startDate: Date,
@@ -21,7 +21,7 @@ interface ClassProps {
 export default function (props: ClassProps) {
 
     const [hue] = useState(() => getHueFromString(props.classData.subject));
-    const duration = getDurationFormatted(props.classData.startDate, props.classData.endDate)
+    const [duration] = useState(() => getDurationFormatted(props.classData.startDate, props.classData.endDate));
 
 
     return (
@@ -31,21 +31,29 @@ export default function (props: ClassProps) {
                 <Text className="text-primary font-inter font-extralight text-base">{formatTime(props.classData.endDate)}</Text>
             </View>
             <View className="bg-dynamic/33 flex-1 gap-3 flex-row rounded-[20px] h-full p-3" style={getHueStyle(hue)}>
-                <View className="bg-dynamic h-full w-[6px] rounded-full "></View>
+                <View className="bg-dynamic h-full w-[6px] rounded-full"></View>
                 <View className="flex-1 h-full flex-col justify-between">
-                    <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{props.classData.subject}</Text>
-                    <View className=" flex flex-row items-center gap-1.5">
-                        <MapPin className="fill-primary size-[17px]" color="white" />
-                        <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{props.classData.room}</Text>
-                    </View>
-                    <View className="flex flex-row items-center gap-1.5">
-                        <User className="fill-primary size-[17px]" color="white" />
-                        <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{props.classData.teacher}</Text>
-                    </View>
-                    <View className="flex flex-row items-center gap-1.5">
-                        <Clock className="fill-primary size-[17px]" color="white" />
-                        <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{`${duration.heures}h${duration.minutes}`}</Text>
-                    </View>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{props.classData.subject}</Text>
+                    </ScrollView>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        <View className=" flex flex-row items-center gap-1.5">
+                            <MapPin className="fill-primary size-[17px]" color="white" />
+                            <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{props.classData.room}</Text>
+                        </View>
+                    </ScrollView>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        <View className="flex flex-row items-center gap-1.5">
+                            <User className="fill-primary size-[17px]" color="white" />
+                            <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{props.classData.teacher}</Text>
+                        </View>
+                    </ScrollView>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        <View className="flex flex-row items-center gap-1.5">
+                            <Clock className="fill-primary size-[17px]" color="white" />
+                            <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{`${duration.heures}h${duration.minutes}`}</Text>
+                        </View>
+                    </ScrollView>
                 </View>
             </View>
         </View>

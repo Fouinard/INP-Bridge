@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import ICAL from "ical.js";
+import { getWeekdays } from '@/utils/Time';
 
 export interface Lesson {
     title: string;
@@ -17,6 +18,8 @@ export class Schedule {
     resources: number;
     username: string | null;
     password: string | null;
+    setCookies: string | null;
+    validateCookies: string | null;
 
     constructor(endpoint = "edt.grenoble-inp.fr", year = "2026-2027", type = "etudiant", location = "prepaINPGrenoble", resources = 1198) {
         this.endpoint = endpoint;
@@ -26,6 +29,8 @@ export class Schedule {
         this.resources = resources;
         this.username = null;
         this.password = null;
+        this.setCookies = null;
+        this.validateCookies = null;
     }
 
     public async getLogins() {
@@ -37,25 +42,6 @@ export class Schedule {
         const [username, password] = logins.split(":");
         this.username = username;
         this.password = password;
-    }
-
-    private getWeekdays(date?: Date) {
-        const today = date || new Date();
-        const monday = new Date(today);
-        const day = today.getDay();
-        const diffToMonday = day === 0 ? -6 : 1 - day;
-        monday.setDate(today.getDate() + diffToMonday);
-        const friday = new Date(monday);
-        friday.setDate(monday.getDate() + 4);
-        return {
-            startDay: monday.getDate(),
-            startMonth: monday.getMonth() + 1,
-            startYear: monday.getFullYear(),
-
-            endDay: friday.getDate(),
-            endMonth: friday.getMonth() + 1,
-            endYear: friday.getFullYear()
-        };
     }
 
     private formatNumber(number: number) {
@@ -160,7 +146,7 @@ export class Schedule {
             lastReferer = targetUrl;
         }
 
-        const week = this.getWeekdays(date);
+        const week = getWeekdays(date);
         
         const bodyParams = new URLSearchParams({
             clearTree: "false",

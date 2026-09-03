@@ -23,3 +23,39 @@ export function dateToNaturalLanguage(date: Date): string {
     const months = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
     return `${days[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]}`;
 }
+
+export function getRelativeDate(date: Date | string): string {
+    const target = new Date(date);
+    const today = new Date();
+    target.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const diffDays = Math.round(
+        (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    if (diffDays === 0) return "Aujourd'hui";
+    if (diffDays === 1) return "Demain";
+    if (diffDays === -1) return "Hier";
+    if (diffDays > 0) {
+        return `Dans ${diffDays} jours`;
+    }
+    return `Il y a ${Math.abs(diffDays)} jours`;
+}
+
+export function getWeekdays(date?: Date) {
+    const today = date || new Date();
+    const monday = new Date(today);
+    const day = today.getDay();
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    monday.setDate(today.getDate() + diffToMonday);
+    const friday = new Date(monday);
+    friday.setDate(monday.getDate() + 4);
+    return {
+        startDay: monday.getDate(),
+        startMonth: monday.getMonth() + 1,
+        startYear: monday.getFullYear(),
+
+        endDay: friday.getDate(),
+        endMonth: friday.getMonth() + 1,
+        endYear: friday.getFullYear()
+    };
+}

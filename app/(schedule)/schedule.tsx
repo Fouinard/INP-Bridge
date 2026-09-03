@@ -1,6 +1,6 @@
 import Class from "@/components/schedule/Class";
 import { Lesson, Schedule } from "@/services/schedule/Schedule";
-import { dateToNaturalLanguage } from "@/utils/Time";
+import { dateToNaturalLanguage, getRelativeDate, getWeekdays } from "@/utils/Time";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useEffect, useState } from "react";
 import {
@@ -19,26 +19,34 @@ export default function () {
         return today;
     });
     const [show, setShow] = useState(false);
+    const [day, setDay] = useState("Aujourd'hui");
 
-    useEffect(() => {
+    const [schedule, setSchedule] = useState<Schedule | null>(null);
+
+    function updateLessonsForDate(newDate: Date) {
         const schedule = new Schedule();
-
         if (Platform.OS === "web") {
             const logins = localStorage.getItem("logins");
 
             if (logins) {
                 schedule.setLogins(atob(logins));
 
-                schedule.getWeekLessons(date).then((lessons) => {
+                schedule.getWeekLessons(newDate).then((lessons) => {
                     setLessons(lessons);
                 });
             }
         } else {
             schedule.getLogins().then(async () => {
-                const lessons = await schedule.getWeekLessons(date);
+                const lessons = await schedule.getWeekLessons(newDate);
                 setLessons(lessons);
             });
         }
+    }
+
+    useEffect(() => {
+        // const schedule = new Schedule();
+        setSchedule(schedule);
+        updateLessonsForDate(date)
     }, []);
 
     return (
@@ -50,9 +58,13 @@ export default function () {
                     value={date}
                     mode="date"
                     is24Hour={true}
-                    onChange={(event, selectedDate) => {
+                    onValueChange={(event, selectedDate) => {
                         if (selectedDate) {
+                            if(getWeekdays(selectedDate) != getWeekdays(date)) {
+                                updateLessonsForDate(selectedDate);
+                            }
                             setDate(selectedDate);
+                            setDay(getRelativeDate(selectedDate));
                         }
 
                         if (Platform.OS === "android") {
@@ -69,7 +81,7 @@ export default function () {
                 </Text>
 
                 <Text className="text-grey text-lg font-normal">
-                    Aujourd'hui
+                    {day}
                 </Text>
             </Pressable>
 
@@ -89,17 +101,15 @@ export default function () {
                             a.start.getTime() - b.start.getTime()
                     )
                     .map((lesson, index) => (
+                        console.log(lesson.description),
                         <Class
-                            key={index}
+                            key={`${lesson.start}+${lesson.title}+${index}`}
                             classData={{
                                 endDate: lesson.end,
                                 startDate: lesson.start,
                                 room: lesson.location,
                                 subject: lesson.title,
-                                teacher: lesson.description
-                                    .trim()
-                                    .split("\n\n")[0]
-                                    .replace("\n", " "),
+                                teacher: lesson.description.match(/^[^\d\n]+$/gm)?.[0] || "N/A",
                             }}
                         />
                     ))}
