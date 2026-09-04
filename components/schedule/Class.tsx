@@ -24,7 +24,6 @@ export default function (props: ClassProps) {
     const [hue] = useState(() => getHueFromString(props.classData.subject));
     const [duration] = useState(() => getDurationFormatted(props.classData.startDate, props.classData.endDate));
 
-
     return (
         <View className="flex flex-row w-full h-32 gap-4">
             <View className="flex flex-col items-end w-1/5 h-full">

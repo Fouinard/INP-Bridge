@@ -3,7 +3,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useRef, useState } from "react";
 import colors from "@/styles/colors";
+import { WebView } from 'react-native-webview';
 import { router } from "expo-router";
+import { Schedule } from "@/services/schedule/Schedule";
 import { Host, DropdownMenu, DropdownMenuItem, OutlinedButton, Icon, } from '@expo/ui/jetpack-compose';
 
 export default function Index() {
@@ -12,8 +14,7 @@ export default function Index() {
     const [classroom, setClassroom] = useState<string | null>(null);
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const usernameInputRef = useRef<TextInput>(null);
-    const passwordInputRef = useRef<TextInput>(null);
+    // const [css, setCss] = useState<string | null>(null);
 
     useEffect(() => {
         const init = async () => {
@@ -21,28 +22,33 @@ export default function Index() {
             const storedPassword = await SecureStore.getItemAsync("password");
             setUsername(storedUsername);
             setPassword(storedPassword);
-            usernameInputRef.current?.setNativeProps({ text: storedUsername || "" });
-            passwordInputRef.current?.setNativeProps({ text: storedPassword || "" });
-
-            const storedClassroom = await AsyncStorage.getItem("classroom");
-            setClassroom(storedClassroom);
         }
         init();
     }, [])
 
-    useEffect(() => {
-        if (username && password) {
-            SecureStore.setItemAsync("username", username);
-            SecureStore.setItemAsync("password", password);
-        }
-    }, [username, password])
-
     return (
         <ScrollView className="flex-1 pt-16 bg-bg px-5">
             <Text className="text-text text-3xl font-semibold h-20">
-                Options
+                Sélectionnez votre classe
             </Text>
-            <View className="flex flex-col gap-4">
+            <Host matchContents>
+                <DropdownMenu expanded={isExpanded} onDismissRequest={() => setIsExpanded(false)}>
+                    <DropdownMenu.Trigger>
+                        <OutlinedButton onClick={() => setIsExpanded(true)}>
+                            <Text>Show menu</Text>
+                        </OutlinedButton>
+                    </DropdownMenu.Trigger>
+                    <DropdownMenu.Items>
+                        <DropdownMenuItem onClick={() => { setIsExpanded(false); console.log('Home pressed'); }}>
+                            <DropdownMenuItem.Text>
+                                <Text>Home</Text>
+                            </DropdownMenuItem.Text>
+                        </DropdownMenuItem>
+                    </DropdownMenu.Items>
+                </DropdownMenu>
+            </Host>
+            {/* <WebView source={{ uri: 'https://your-website.com/class-selection' }} /> */}
+            {/* <View className="flex flex-col gap-4">
                 <View className="flex flex-col gap-2">
                     <Text className="text-text text-xl">
                         Nom d'utilisateur
@@ -72,32 +78,15 @@ export default function Index() {
                     <Text className="text-text text-xl">
                         Classe : {classroom || "Non définie"}
                     </Text>
-                    {/* <Pressable className="p-2 border border-text rounded-md w-full" onPress={() => {
+                    <Pressable className="p-2 border border-text rounded-md w-full" onPress={() => {
                         router.push("/classSelection");
                     }}>
                         <Text className="text-text text-center">
                             Modifier la classe
                         </Text>
-                    </Pressable> */}
-                    <Host matchContents>
-                        <DropdownMenu expanded={isExpanded} onDismissRequest={() => setIsExpanded(false)}>
-                            <DropdownMenu.Trigger>
-                                <OutlinedButton onClick={() => setIsExpanded(true)}>
-                                    <Text>Show menu</Text>
-                                </OutlinedButton>
-                            </DropdownMenu.Trigger>
-                            <DropdownMenu.Items>
-                                <DropdownMenuItem onClick={() => { setIsExpanded(false); console.log('Home pressed'); }}>
-                                    <DropdownMenuItem.Text>
-                                        <Text>Home</Text>
-                                    </DropdownMenuItem.Text>
-                                </DropdownMenuItem>
-                            </DropdownMenu.Items>
-                        </DropdownMenu>
-                    </Host>
-
+                    </Pressable>
                 </View>
-            </View>
+            </View> */}
         </ScrollView>
     );
 }

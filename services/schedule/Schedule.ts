@@ -79,7 +79,7 @@ export class Schedule {
         return this.parseIcalText(icsText);
     }
 
-    private async fetchWithHeaders(url: string, authorization: string, referer: string, method: string, contentType: string | null, body: string | null, cookies: string) {
+    public static async fetchWithHeaders(url: string, authorization: string, referer: string, method: string, contentType: string | null, body: string | null, cookies: string) {
         const headers: Record<string, string> = {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Authorization": authorization,
@@ -118,7 +118,7 @@ export class Schedule {
         const rawCookie = sessionResponse.headers.get("set-cookie") || "";
         const jsessionid = rawCookie.split(";")[0];
 
-        const validateSession = await this.fetchWithHeaders(
+        const validateSession = await Schedule.fetchWithHeaders(
             `https://${this.endpoint}/${this.year}/prepaINPGrenoble/etudiant/jsp/custom/modules/plannings/direct_planning.jsp`,
             auth,
             `https://${this.endpoint}/${this.year}/prepaINPGrenoble/etudiant/jsp/standard/direct_planning.jsp`,
@@ -142,7 +142,7 @@ export class Schedule {
 
         for (const step of treeSteps) {
             const targetUrl = `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/standard/gui/tree.jsp?${step}`;
-            await this.fetchWithHeaders(targetUrl, auth, lastReferer, "GET", null, null, combinedCookies);
+            await Schedule.fetchWithHeaders(targetUrl, auth, lastReferer, "GET", null, null, combinedCookies);
             lastReferer = targetUrl;
         }
 
@@ -161,7 +161,7 @@ export class Schedule {
             y: "5"
         });
 
-        const response = await this.fetchWithHeaders(
+        const response = await Schedule.fetchWithHeaders(
             `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/custom/modules/plannings/ical.jsp`,
             auth,
             `https://${this.endpoint}/${this.year}/${this.location}/${this.type}/jsp/custom/modules/plannings/icalDates.jsp?clearTree=false`,

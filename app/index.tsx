@@ -1,19 +1,27 @@
-import { Button, Text, View } from "react-native";
-import { Link } from "expo-router";
+import { Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import * as SecureStore from 'expo-secure-store';
+import { useEffect } from "react";
 
 export default function Index() {
+    const router = useRouter();
+
+    useEffect(() => {
+        const checkLogins = async () => {
+            const username = await SecureStore.getItemAsync("username");
+            const password = await SecureStore.getItemAsync("password");
+            if (!username || !password) {
+                router.replace("/startup");
+            } else {
+                router.replace("/schedule");
+            }
+        }
+        checkLogins();
+    }, [])
+
     return (
         <View className="flex-1 justify-center items-center bg-bg">
-            <Text className="text-text">Edit app/index.tsx to edit this screen.</Text>
-            <Link href="/dev/test1">
-               <Text className="text-text">Test1</Text>
-            </Link>
-            <Link href="/dev/test2">
-               <Text className="text-text">Test2</Text>
-            </Link>
-            <Link href="/startup">
-               <Text className="text-text">Startup</Text>
-            </Link>
+            <Text className="text-text">Chargement</Text>
         </View>
     );
 }

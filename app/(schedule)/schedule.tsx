@@ -25,22 +25,10 @@ export default function () {
 
     function updateLessonsForDate(newDate: Date) {
         const schedule = new Schedule();
-        if (Platform.OS === "web") {
-            const logins = localStorage.getItem("logins");
-
-            if (logins) {
-                schedule.setLogins(atob(logins));
-
-                schedule.getWeekLessons(newDate).then((lessons) => {
-                    setLessons(lessons);
-                });
-            }
-        } else {
-            schedule.getLogins().then(async () => {
-                const lessons = await schedule.getWeekLessons(newDate);
-                setLessons(lessons);
-            });
-        }
+        schedule.getLogins().then(async () => {
+            const lessons = await schedule.getWeekLessons(newDate);
+            setLessons(lessons);
+        });
     }
 
     useEffect(() => {
@@ -60,7 +48,7 @@ export default function () {
                     is24Hour={true}
                     onValueChange={(event, selectedDate) => {
                         if (selectedDate) {
-                            if(getWeekdays(selectedDate) != getWeekdays(date)) {
+                            if (getWeekdays(selectedDate) != getWeekdays(date)) {
                                 updateLessonsForDate(selectedDate);
                             }
                             setDate(selectedDate);
