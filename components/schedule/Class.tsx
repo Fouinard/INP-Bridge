@@ -34,9 +34,12 @@ export default function (props: ClassProps) {
             <View className="bg-dynamic/33 flex-1 gap-3 flex-row rounded-[20px] h-full p-3" style={getHueStyle(hue)}>
                 <View className="bg-dynamic h-full w-[6px] rounded-full"></View>
                 <View className="flex-1 h-full flex-col justify-between">
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                        <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{props.classData.subject}</Text>
-                    </ScrollView>
+                    <View className="flex flex-row items-center gap-2">
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                            <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{props.classData.subject}</Text>
+                        </ScrollView>
+                        {props.classData.classType && <Text className="bg-primary text-black font-inter font-medium text-sm px-2 py-1 rounded-full">{props.classData.classType}</Text>}
+                    </View>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                         <View className=" flex flex-row items-center gap-1.5">
                             <MapPin className="fill-primary size-[17px]" color="white" />
@@ -55,7 +58,6 @@ export default function (props: ClassProps) {
                             <Text numberOfLines={1} className="text-primary font-inter font-medium text-base">{`${duration.heures}h${duration.minutes}`}</Text>
                         </View>
                     </ScrollView>
-                    {props.classData.classType && <Text className="bg-primary text-black font-inter font-medium text-sm absolute top-3 right-3 px-2 py-1 rounded-full">{props.classData.classType}</Text>}
                 </View>
             </View>
         </View>
