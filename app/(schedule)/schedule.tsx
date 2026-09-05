@@ -24,12 +24,10 @@ export default function () {
 
     const [schedule, setSchedule] = useState<Schedule | null>(null);
 
-    function updateLessonsForDate(newDate: Date) {
+    async function updateLessonsForDate(newDate: Date) {
         const schedule = new Schedule();
-        schedule.getLogins().then(async () => {
-            const lessons = await schedule.getWeekLessons(newDate);
-            setLessons(lessons);
-        });
+        const lessons = await schedule.getWeekLessons(newDate);
+        setLessons(lessons);
     }
 
     useEffect(() => {

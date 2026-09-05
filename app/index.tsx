@@ -1,7 +1,7 @@
-import { Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import * as SecureStore from 'expo-secure-store';
 import { useEffect } from "react";
+import { Text, View } from "react-native";
 
 export default function Index() {
     const router = useRouter();
