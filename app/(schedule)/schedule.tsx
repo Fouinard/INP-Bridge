@@ -1,3 +1,4 @@
+import Break from "@/components/schedule/Break";
 import Class from "@/components/schedule/Class";
 import { Lesson, Schedule } from "@/services/schedule/Schedule";
 import { dateToNaturalLanguage, getRelativeDate, getWeekdays } from "@/utils/Time";
@@ -88,19 +89,42 @@ export default function () {
                         (a, b) =>
                             a.start.getTime() - b.start.getTime()
                     )
-                    .map((lesson, index) => (
-                        <Class
-                            key={`${lesson.start}+${lesson.title}+${index}`}
-                            classData={{
-                                endDate: lesson.end,
-                                startDate: lesson.start,
-                                room: lesson.location,
-                                subject: lesson.title,
-                                teacher: lesson.description.match(/^[^\d\n]+$/gm)?.[0] || "N/A",
-                                classType: lesson.description.match(/(?<=_)(CM|TD|TP)(?=_)/)?.[0] as "CM" | "TD" | "TP" || null,
-                            }}
-                        />
-                    ))}
+                    .flatMap((lesson, index, lessonsOfDay) => {
+                        const nextLesson = lessonsOfDay[index + 1];
+
+                        const hasBreak =
+                            nextLesson &&
+                            nextLesson.start.getTime() > lesson.end.getTime();
+
+                        return [
+                            <Class
+                                key={`lesson-${lesson.start.getTime()}-${lesson.title}`}
+                                classData={{
+                                    endDate: lesson.end,
+                                    startDate: lesson.start,
+                                    room: lesson.location.replace(" (V)", ""),
+                                    subject: lesson.title,
+                                    teacher:
+                                        lesson.description.match(/^[^\d\n]+$/gm)?.[0] ||
+                                        "N/A",
+                                    classType:
+                                        lesson.description.match(
+                                            /(?<=_)(CM|TD|TP)(?=_)/
+                                        )?.[0] as "CM" | "TD" | "TP" || null,
+                                }}
+                            />,
+
+                            ...(hasBreak
+                                ? [
+                                    <Break
+                                        key={`break-${lesson.end.getTime()}`}
+                                        startDate={lesson.end}
+                                        endDate={nextLesson.start}
+                                    />,
+                                ]
+                                : []),
+                        ];
+                    })}
             </ScrollView>
         </View>
     );
