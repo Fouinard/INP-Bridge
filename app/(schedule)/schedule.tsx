@@ -33,7 +33,6 @@ export default function () {
     }
 
     useEffect(() => {
-        // const schedule = new Schedule();
         setSchedule(schedule);
         updateLessonsForDate(date)
     }, []);
