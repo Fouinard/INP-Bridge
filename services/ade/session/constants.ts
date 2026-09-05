@@ -1,4 +1,4 @@
-import { ADERequestParams } from "./types";
+import { ADERequestParams } from "@/services/ade/session/types";
 
 export const ADE_DEFAULTS = {
   endpoint: "edt.grenoble-inp.fr",

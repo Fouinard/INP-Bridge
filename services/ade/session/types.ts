@@ -15,11 +15,6 @@ export interface ADESessionParams extends ADEAuthenticatedParams {
   cookieString: string;
 }
 
-export interface ADEGetIcalParams extends ADESessionParams {
-  startDate?: string | Date;
-  endDate?: string | Date;
-}
-
 export interface TreeRequestParams extends ADESessionParams {
   nodeId: number | string;
 }

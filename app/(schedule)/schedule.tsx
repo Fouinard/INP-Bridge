@@ -1,15 +1,15 @@
 import Break from "@/components/schedule/Break";
 import Class from "@/components/schedule/Class";
-import { Lesson, Schedule } from "@/services/schedule/Schedule";
+import { Lesson, Schedule } from "@/services/ade/schedule/Schedule";
 import { dateToNaturalLanguage, getRelativeDate, getWeekdays } from "@/utils/Time";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useEffect, useState } from "react";
 import {
-    Platform,
-    Pressable,
-    ScrollView,
-    Text,
-    View,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
 } from "react-native";
 
 export default function () {

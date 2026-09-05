@@ -1,12 +1,7 @@
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DropdownMenu, DropdownMenuItem, Host, OutlinedButton } from '@expo/ui/jetpack-compose';
 import * as SecureStore from 'expo-secure-store';
-import { useEffect, useRef, useState } from "react";
-import colors from "@/styles/colors";
-import { WebView } from 'react-native-webview';
-import { router } from "expo-router";
-import { Schedule } from "@/services/schedule/Schedule";
-import { Host, DropdownMenu, DropdownMenuItem, OutlinedButton, Icon, } from '@expo/ui/jetpack-compose';
+import { useEffect, useState } from "react";
+import { ScrollView, Text } from "react-native";
 
 export default function Index() {
     const [username, setUsername] = useState<string | null>(null);
