@@ -1,8 +1,10 @@
 import { CookieDict, findCookie } from '@/utils/cookies';
 import * as SecureStore from 'expo-secure-store';
-import { ADE_DEFAULTS } from './constants';
-import { createSession, expandTreeNode, selectTreeNode, valiateSession } from './endpoints';
-import { ADESessionParams, ExpandNodeTypes } from './types';
+import { ADE_DEFAULTS } from '../constants';
+import { expandTreeNode, selectTreeNode } from '../tree/endpoints';
+import { ExpandableNodeTypes } from '../tree/types';
+import { createSession, valiateSession } from './endpoints';
+import { ADESessionParams } from './types';
 
 export class SessionManager {
     private static instance: SessionManager | null = null;
@@ -28,7 +30,7 @@ export class SessionManager {
         return Object.entries(this.cookies).map(([name, cookie]) => `${cookie.value}`).join("; ");
     }
 
-    public async login() {
+    public async createSession() {
         const creds = await this.getFormattedCredentials();
         try {
             this.cookies = { ...this.cookies, ...await createSession({ credentials: creds }) };
@@ -41,6 +43,10 @@ export class SessionManager {
         } catch (error) {
             throw new Error(`Failed to validate session: ${error}`);
         }
+    }
+
+    public async selectClass() {
+        const creds = await this.getFormattedCredentials();
 
         // MODIF AVEC SHAREDPREFS POUR CHOIX CLASSE
         const nodeList = [["category", "trainee"], ["branch", "7"], ["branch", "3719"], ["select", "1198"]];
@@ -49,13 +55,26 @@ export class SessionManager {
         for (const treeNode of nodeList) {
             // console.log(treeNode)
             if (treeNode[0] == "select") {
-                referer = await selectTreeNode({ credentials: creds, nodeId: treeNode[1], cookieString: this.getSessionCookies(), referer: referer });
+                referer = (await selectTreeNode({ credentials: creds, nodeId: treeNode[1], cookieString: this.getSessionCookies(), referer: referer })).currentUrl;
             } else {
-                referer = await expandTreeNode({ credentials: creds, nodeType: treeNode[0] as ExpandNodeTypes, nodeId: treeNode[1], cookieString: this.getSessionCookies(), referer: referer });
+                referer = (await expandTreeNode({ credentials: creds, nodeType: treeNode[0] as ExpandableNodeTypes, nodeId: treeNode[1], cookieString: this.getSessionCookies(), referer: referer })).currentUrl;
             }
         }
     }
 
+    public async login() {
+        await this.createSession();
+        await this.selectClass();
+    }
+
+    public clearSession() {
+        this.cookies = {};
+    }
+
+    public generateFreshSession() {
+        this.clearSession();
+        this.login();
+    }
 
     public async authenticatedRequest<
         F extends (params: any) => Promise<any>,
@@ -66,6 +85,7 @@ export class SessionManager {
         ...[extraParams]: keyof ExtraParams extends never ? [] : [params: ExtraParams]
     ): Promise<T> {
         if (!findCookie(this.cookies, "jsessionid")) {
+            this.clearSession();
             await this.login();
         }
 
@@ -80,7 +100,7 @@ export class SessionManager {
             // console.log(error);
             // console.log("failed authenticated request, retrying...");
 
-            this.cookies = {};
+            this.clearSession();
             await this.login();
 
             return await apiFunction({

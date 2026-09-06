@@ -1,6 +1,6 @@
 import { Link, router } from "expo-router";
-import { View, Text, Pressable } from "react-native";
 import * as SecureStore from 'expo-secure-store';
+import { Pressable, Text, View } from "react-native";
 
 export default function () {
     return (
@@ -14,6 +14,9 @@ export default function () {
             </Link>
             <Link href="/startup">
                 <Text className="text-text">Startup</Text>
+            </Link>
+            <Link href="/(options)/adetreescreen">
+                <Text className="text-text">AdetreeScreen</Text>
             </Link>
             <Pressable onPress={async () => {
                 await SecureStore.deleteItemAsync("username");

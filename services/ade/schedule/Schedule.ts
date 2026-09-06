@@ -1,7 +1,7 @@
 import { getIcal } from "@/services/ade/schedule/endpoints";
 import ICAL from "ical.js";
+import { ADE_DEFAULTS } from "../constants";
 import { SessionManager } from '../session/SessionManager';
-import { ADE_DEFAULTS } from "../session/constants";
 
 export interface Lesson {
     title: string;

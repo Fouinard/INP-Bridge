@@ -3,11 +3,11 @@ import "@/styles/global.css";
 import { toastConfig } from "@/styles/ToastsStyle";
 import { useFonts } from 'expo-font';
 import { Stack, useRouter } from "expo-router";
-import { View } from "react-native";
-import Toast from "react-native-toast-message";
+import * as SecureStore from 'expo-secure-store';
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
-import * as SecureStore from 'expo-secure-store';
+import { View } from "react-native";
+import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
     const [ready, setReady] = useState(false);
