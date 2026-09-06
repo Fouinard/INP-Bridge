@@ -7,8 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "inpbridge",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "jsEngine": "hermes",
     "ios": {
       "supportsTablet": true
     },

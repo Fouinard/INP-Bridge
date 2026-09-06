@@ -16,7 +16,7 @@ export class Schedule {
 
     constructor(resources = 1198) {
         this.resources = resources;
-    }    
+    }
 
     private parseIcalText(icsText: string): Lesson[] {
         const jcal = ICAL.parse(icsText);
@@ -35,7 +35,6 @@ export class Schedule {
             };
         });
     }
-
 
     async fetch4Weeks() {
         const response = await fetch(

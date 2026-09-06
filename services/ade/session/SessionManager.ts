@@ -4,7 +4,6 @@ import { ADE_DEFAULTS } from './constants';
 import { createSession, expandTreeNode, selectTreeNode, valiateSession } from './endpoints';
 import { ADESessionParams, ExpandNodeTypes } from './types';
 
-
 export class SessionManager {
     private static instance: SessionManager | null = null;
 
@@ -48,7 +47,7 @@ export class SessionManager {
 
         let referer = `https://${ADE_DEFAULTS.endpoint}/${ADE_DEFAULTS.year}/${ADE_DEFAULTS.location}/${ADE_DEFAULTS.type}/jsp/standard/gui/tree.jsp?forceLoad=false&isDirect=true`
         for (const treeNode of nodeList) {
-            console.log(treeNode)
+            // console.log(treeNode)
             if (treeNode[0] == "select") {
                 referer = await selectTreeNode({ credentials: creds, nodeId: treeNode[1], cookieString: this.getSessionCookies(), referer: referer });
             } else {
@@ -71,15 +70,15 @@ export class SessionManager {
         }
 
         try {
-            console.log("authenticated request");
+            // console.log("authenticated request");
             return await apiFunction({
                 credentials: await this.getFormattedCredentials(),
                 cookieString: this.getSessionCookies(),
                 ...(extraParams as any),
             });
         } catch (error) {
-            console.log(error);
-            console.log("failed authenticated request, retrying...");
+            // console.log(error);
+            // console.log("failed authenticated request, retrying...");
 
             this.cookies = {};
             await this.login();

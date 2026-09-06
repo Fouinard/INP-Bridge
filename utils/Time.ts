@@ -59,3 +59,48 @@ export function getWeekdays(date?: Date) {
         endYear: friday.getFullYear()
     };
 }
+
+export const getNextWeekday = (date: Date): Date => {
+    const result = new Date(date);
+
+    // Vendredi → lundi suivant
+    if (result.getDay() === 5) {
+        result.setDate(result.getDate() + 3);
+    } else {
+        // Tous les autres jours → lendemain
+        result.setDate(result.getDate() + 1);
+    }
+
+    return result;
+};
+
+export const getPreviousWeekday = (date: Date): Date => {
+    const result = new Date(date);
+
+    // Lundi → vendredi précédent
+    if (result.getDay() === 1) {
+        result.setDate(result.getDate() - 3);
+    } else {
+        // Tous les autres jours → veille
+        result.setDate(result.getDate() - 1);
+    }
+
+    return result;
+};
+
+export const isSameWeek = (date1: Date, date2: Date): boolean => {
+    const getWeekStart = (date: Date): Date => {
+        const result = new Date(date);
+        const day = result.getDay();
+
+        // Lundi = début de semaine
+        const diff = day === 0 ? -6 : 1 - day;
+
+        result.setDate(result.getDate() + diff);
+        result.setHours(0, 0, 0, 0);
+
+        return result;
+    };
+
+    return getWeekStart(date1).getTime() === getWeekStart(date2).getTime();
+};

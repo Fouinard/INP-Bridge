@@ -87,7 +87,7 @@ export default function Index() {
                                 </OutlinedButton>
                             </DropdownMenu.Trigger>
                             <DropdownMenu.Items>
-                                <DropdownMenuItem onClick={() => { setIsExpanded(false); console.log('Home pressed'); }}>
+                                <DropdownMenuItem onClick={() => { setIsExpanded(false) }}>
                                     <DropdownMenuItem.Text>
                                         <Text>Home</Text>
                                     </DropdownMenuItem.Text>
