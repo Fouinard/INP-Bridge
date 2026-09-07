@@ -11,6 +11,8 @@ export class SessionManager {
 
     private cookies: CookieDict = {};
 
+    private loginPromise: Promise<void> | null = null;
+
     private constructor() { }
 
     public static getInstance(): SessionManager {
@@ -18,6 +20,23 @@ export class SessionManager {
             SessionManager.instance = new SessionManager();
         }
         return SessionManager.instance;
+    }
+
+    public async login(): Promise<void> {
+        if (this.loginPromise) {
+            return this.loginPromise;
+        }
+
+        this.loginPromise = (async () => {
+            try {
+                await this.createSession();
+                await this.selectClass();
+            } finally {
+                this.loginPromise = null;
+            }
+        })();
+
+        return this.loginPromise;
     }
 
     public async getFormattedCredentials(): Promise<string> {
@@ -62,18 +81,13 @@ export class SessionManager {
         }
     }
 
-    public async login() {
-        await this.createSession();
-        await this.selectClass();
-    }
-
     public clearSession() {
         this.cookies = {};
     }
 
-    public generateFreshSession() {
+    public async generateFreshSession() {
         this.clearSession();
-        this.login();
+        await this.login();
     }
 
     public async authenticatedRequest<
