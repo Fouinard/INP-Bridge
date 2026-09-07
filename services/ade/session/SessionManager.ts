@@ -50,8 +50,11 @@ export class SessionManager {
         return Object.entries(this.cookies).map(([name, cookie]) => `${cookie.value}`).join("; ");
     }
 
-    public async createSession() {
-        const creds = await this.getFormattedCredentials();
+    public async createSession(credentialsOverride?: { username: string, password: string }) {
+        let creds = await this.getFormattedCredentials();
+        if (credentialsOverride) {
+            creds = btoa(`${credentialsOverride.username}:${credentialsOverride.password}`);
+        }
         try {
             this.cookies = { ...this.cookies, ...await createSession({ credentials: creds }) };
         } catch (error) {

@@ -4,7 +4,7 @@ import { Pressable, Text, View } from "react-native";
 
 export default function () {
     return (
-        <View className="flex-1 justify-center items-center bg-bg">
+        <View className="flex-1 justify-center items-center bg-bg gap-2">
             <Text className="text-text">Edit app/index.tsx to edit this screen.</Text>
             <Link href="/dev/test1">
                 <Text className="text-text">Test1</Text>
@@ -25,6 +25,21 @@ export default function () {
             }}>
                 <Text className="text-text">Logout</Text>
             </Pressable>
+            <Pressable onPress={async () => {
+                await StorageManager.Default.remove("ADEClassTreeList");
+                router.replace("/startup");
+            }}>
+                <Text className="text-text">Clear class</Text>
+            </Pressable>
+            <Pressable onPress={async () => {
+                await StorageManager.Default.remove("ADEClassTreeList");
+                await StorageManager.Secure.remove("username");
+                await StorageManager.Secure.remove("password");
+                router.replace("/startup");
+            }}>
+                <Text className="text-text">Fresh start</Text>
+            </Pressable>
+
         </View>
     )
 }

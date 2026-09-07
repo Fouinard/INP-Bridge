@@ -5,8 +5,12 @@ import { FlatList, Modal, Pressable, Text, View } from 'react-native';
 
 import { ADETreeService } from '@/services/ade/tree/TreeService';
 import { StorageManager } from '@/services/storage';
+import { useRouter } from 'expo-router';
 
 export default function TreeScreen() {
+
+    const router = useRouter();
+
     const [nodes, setNodes] = useState<ParsedTreeNode[]>([]);
     const [expandedNodeIds, setExpandedNodeIds] = useState<Set<string>>(new Set());
     const [loadingNodeId, setLoadingNodeId] = useState<string | null>(null);
@@ -23,7 +27,6 @@ export default function TreeScreen() {
 
     const handleNodePress = useCallback((node: ParsedTreeNode) => {
         if (node.isSelectable) {
-            // Si c'est déjà la classe sélectionnée en local, pas besoin d'ouvrir la modal
             if (selectedNode?.id === node.id) {
                 return;
             }
@@ -138,6 +141,7 @@ export default function TreeScreen() {
             setAlertVisible(false);
             setPendingNode(null);
         }
+        router.push("/schedule");
     }, [pendingNode, selectedNode]);
 
     const handleCancelSelection = useCallback(() => {

@@ -16,7 +16,15 @@ export default function Index() {
                 router.replace("/schedule");
             }
         }
+
+        const checkClass = async () => {
+            const classId = await StorageManager.Secure.get("ADEClassTreeList");
+            if (!classId) {
+                router.replace("/adetreescreen");
+            }
+        }
         checkLogins();
+        checkClass();
     }, [])
 
     return (

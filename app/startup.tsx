@@ -1,9 +1,10 @@
+import { SessionManager } from "@/services/ade/session";
 import { StorageManager } from "@/services/storage";
 import colors from "@/styles/colors";
 import { Checkbox } from "expo-checkbox";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import Toast from "react-native-toast-message";
 
 export default function () {
@@ -74,14 +75,14 @@ export default function () {
                 </Pressable>
             </View>
             <Pressable className="mt-10 p-2 border border-text rounded-md w-1/2 self-center" onPress={async () => {
-                if(!privacyChecked) {
+                if (!privacyChecked) {
                     return Toast.show({
                         type: 'error',
                         text2: 'Vous devez accepter la politique de confidentialité pour continuer.',
                         position: 'bottom',
                     })
                 }
-                if(!termsChecked) {
+                if (!termsChecked) {
                     return Toast.show({
                         type: 'error',
                         text2: 'Vous devez accepter les conditions d\'utilisation pour continuer.',
@@ -89,17 +90,30 @@ export default function () {
                     })
                 }
                 Toast.hide()
-                if(Platform.OS === "web") {
-                    localStorage.setItem('logins', btoa(`${username}:${password}`));
-                } else {
-                    await StorageManager.Secure.set('username', username);
-                    await StorageManager.Secure.set('password', password);
+                try {
+                    await SessionManager.getInstance().createSession({ username, password });
+                } catch (error) {
+                    Toast.show({
+                        type: 'error',
+                        text2: `Identifiants invalides !`,
+                        position: 'bottom',
+                    })
+                    return;
                 }
+                await StorageManager.Secure.set('username', username);
+                await StorageManager.Secure.set('password', password);
                 Toast.show({
                     type: 'success',
                     text2: `Identifiants enregistrés avec succès !`,
                     position: 'bottom',
                 })
+
+                if (await StorageManager.Secure.get('ADEClassTreeList') === null) {
+                    await StorageManager.Secure.remove('ADEClassTreeList');
+                    router.push("/adetreescreen");
+                    return;
+                }
+
                 router.push("/schedule")
             }}>
                 <Text className="text-text text-center">
