@@ -79,7 +79,7 @@ export default function Index() {
                             Modifier la classe
                         </Text>
                     </Pressable> */}
-                    <Host matchContents>
+                    {/* <Host matchContents>
                         <DropdownMenu expanded={isExpanded} onDismissRequest={() => setIsExpanded(false)}>
                             <DropdownMenu.Trigger>
                                 <OutlinedButton onClick={() => setIsExpanded(true)}>
@@ -94,8 +94,12 @@ export default function Index() {
                                 </DropdownMenuItem>
                             </DropdownMenu.Items>
                         </DropdownMenu>
-                    </Host>
-
+                    </Host> */}
+                    <Pressable>
+                        <Text className="text-text text-center text-xl">
+                            Modifier ma classe
+                        </Text>
+                    </Pressable>
                 </View>
             </View>
         </ScrollView>
