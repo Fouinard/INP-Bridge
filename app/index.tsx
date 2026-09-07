@@ -1,5 +1,5 @@
+import { StorageManager } from "@/services/storage";
 import { useRouter } from "expo-router";
-import * as SecureStore from 'expo-secure-store';
 import { useEffect } from "react";
 import { Text, View } from "react-native";
 
@@ -8,8 +8,8 @@ export default function Index() {
 
     useEffect(() => {
         const checkLogins = async () => {
-            const username = await SecureStore.getItemAsync("username");
-            const password = await SecureStore.getItemAsync("password");
+            const username = await StorageManager.Secure.get("username");
+            const password = await StorageManager.Secure.get("password");
             if (!username || !password) {
                 router.replace("/startup");
             } else {

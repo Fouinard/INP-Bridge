@@ -1,9 +1,9 @@
 import BottomNavBar from "@/components/BottomNavBar";
+import { StorageManager } from "@/services/storage";
 import "@/styles/global.css";
 import { toastConfig } from "@/styles/ToastsStyle";
 import { useFonts } from 'expo-font';
 import { Stack, useRouter } from "expo-router";
-import * as SecureStore from 'expo-secure-store';
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
@@ -19,8 +19,8 @@ export default function RootLayout() {
     useEffect(() => {
         const checkLogin = async () => {
             try {
-                const username = await SecureStore.getItemAsync("username");
-                const password = await SecureStore.getItemAsync("password");
+                const username = await StorageManager.Secure.get("username");
+                const password = await StorageManager.Secure.get("password");
 
                 if (username && password) {
                     router.replace("/schedule");

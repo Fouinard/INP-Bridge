@@ -1,11 +1,10 @@
-import { Text, View, TextInput, ScrollView, Pressable } from "react-native";
-import Toast from "react-native-toast-message";
-import * as SecureStore from 'expo-secure-store';
-import { Checkbox } from "expo-checkbox";
-import { useState } from "react";
-import { useRouter } from "expo-router";
+import { StorageManager } from "@/services/storage";
 import colors from "@/styles/colors";
-import { Platform } from "react-native";
+import { Checkbox } from "expo-checkbox";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import Toast from "react-native-toast-message";
 
 export default function () {
 
@@ -93,8 +92,8 @@ export default function () {
                 if(Platform.OS === "web") {
                     localStorage.setItem('logins', btoa(`${username}:${password}`));
                 } else {
-                    await SecureStore.setItemAsync('username', username);
-                    await SecureStore.setItemAsync('password', password);
+                    await StorageManager.Secure.set('username', username);
+                    await StorageManager.Secure.set('password', password);
                 }
                 Toast.show({
                     type: 'success',

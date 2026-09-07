@@ -1,16 +1,10 @@
 import { TreeNodeRow } from '@/components/class_selector/TreeNodeRow';
 import { ParsedTreeNode } from '@/services/ade/tree/types';
-import { useEffect, useState } from 'react';
-import {
-    FlatList,
-    Modal,
-    Pressable,
-    View
-} from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { FlatList, Modal, Pressable, Text, View } from 'react-native';
 
 import { ADETreeService } from '@/services/ade/tree/TreeService';
-import { useCallback, useMemo } from 'react';
-import { Text } from 'react-native';
+import { StorageManager } from '@/services/storage';
 
 export default function TreeScreen() {
     const [nodes, setNodes] = useState<ParsedTreeNode[]>([]);
@@ -19,7 +13,6 @@ export default function TreeScreen() {
     const [selectedNode, setSelectedNode] = useState<ParsedTreeNode | null>(null);
     const [alertVisible, setAlertVisible] = useState(false);
     const [pendingNode, setPendingNode] = useState<ParsedTreeNode | null>(null);
-    const [previousSelectedNode, setPreviousSelectedNode] = useState<ParsedTreeNode | null>(null);
 
     const visibleNodes = useMemo(() => {
         return nodes.filter(node => {
@@ -28,14 +21,12 @@ export default function TreeScreen() {
         });
     }, [nodes, expandedNodeIds]);
 
-    const handleNodePress = useCallback(async (node: ParsedTreeNode) => {
+    const handleNodePress = useCallback((node: ParsedTreeNode) => {
         if (node.isSelectable) {
-            if (selectedNode?.id === node.id && !alertVisible) {
+            // Si c'est déjà la classe sélectionnée en local, pas besoin d'ouvrir la modal
+            if (selectedNode?.id === node.id) {
                 return;
             }
-
-            setPreviousSelectedNode(selectedNode);
-            setSelectedNode(node);
             setPendingNode(node);
             setAlertVisible(true);
             return;
@@ -59,22 +50,23 @@ export default function TreeScreen() {
             return;
         }
 
-        try {
-            setLoadingNodeId(node.id);
-            const updatedNodes = await ADETreeService.expandNode(node.id, node.type);
+        (async () => {
+            try {
+                setLoadingNodeId(node.id);
+                const updatedNodes = await ADETreeService.expandNode(node.id, node.type);
 
-            const serverSelected = updatedNodes.find(n => n.isSelected && n.isSelectable);
-            if (serverSelected && !selectedNode) {
-                setSelectedNode(serverSelected);
-                setPreviousSelectedNode(serverSelected);
+                const serverSelected = updatedNodes.find(n => n.isSelected && n.isSelectable);
+                if (serverSelected && !selectedNode) {
+                    setSelectedNode(serverSelected);
+                }
+
+                setNodes(updatedNodes);
+                setExpandedNodeIds(prev => new Set(prev).add(node.id));
+            } finally {
+                setLoadingNodeId(null);
             }
-
-            setNodes(updatedNodes);
-            setExpandedNodeIds(prev => new Set(prev).add(node.id));
-        } finally {
-            setLoadingNodeId(null);
-        }
-    }, [expandedNodeIds]);
+        })();
+    }, [expandedNodeIds, nodes, selectedNode]);
 
     useEffect(() => {
         let isMounted = true;
@@ -82,7 +74,6 @@ export default function TreeScreen() {
         async function loadInitialTree() {
             try {
                 setLoadingNodeId('root');
-
                 const rootNodes = await ADETreeService.fetchTreeRoot({});
 
                 if (isMounted) {
@@ -90,12 +81,10 @@ export default function TreeScreen() {
                     for (const node of rootNodes) {
                         if (node.isExpanded && !node.isSelectable) {
                             setExpandedNodeIds(prev => new Set(prev).add(node.id));
-                        }
-                        else if (node.isSelectable && node.isSelected) {
-                            setPreviousSelectedNode(node);
+                        } else if (node.isSelectable && node.isSelected) {
                             setSelectedNode(node);
                         }
-                    };
+                    }
                 }
             } catch (error) {
                 console.error(`Error loading initial tree:`, error);
@@ -114,22 +103,47 @@ export default function TreeScreen() {
     }, []);
 
     const handleConfirmSelection = useCallback(async () => {
-        if (previousSelectedNode?.id !== pendingNode?.id) {
-            await ADETreeService.selectNode(pendingNode!.id);
+        if (!pendingNode) return;
+
+        const oldSelected = selectedNode;
+        const newSelected = pendingNode;
+
+        try {
+            // 1. Inversion des sélections côté ADE
+            await ADETreeService.selectNode(newSelected.id);
+            if (oldSelected && oldSelected.id !== newSelected.id) {
+                await ADETreeService.selectNode(oldSelected.id);
+            }
+
+            // 2. Mise à jour forcée du tableau nodes pour rafraîchir l'UI
+            setNodes(prevNodes =>
+                prevNodes.map(n => {
+                    if (n.id === newSelected.id) return { ...n, isSelected: true };
+                    if (oldSelected && n.id === oldSelected.id) return { ...n, isSelected: false };
+                    return n;
+                })
+            );
+
+            // 3. Mise à jour du state selectedNode
+            setSelectedNode(newSelected);
+
+            // 4. Persistence locale
+            const nodeList = newSelected.parents.map(parent => [parent.type, parent.id]);
+            nodeList.push(["select", newSelected.id]);
+            await StorageManager.Default.set("ADEClassTreeList", nodeList);
+
+        } catch (error) {
+            console.error(`Erreur lors du changement de classe:`, error);
+        } finally {
+            setAlertVisible(false);
+            setPendingNode(null);
         }
-
-        await ADETreeService.selectNode(previousSelectedNode!.id);
-
-        setAlertVisible(false);
-        setPendingNode(null);
-        setPreviousSelectedNode(selectedNode);
-    }, [previousSelectedNode, pendingNode, selectedNode]);
+    }, [pendingNode, selectedNode]);
 
     const handleCancelSelection = useCallback(() => {
-        setSelectedNode(previousSelectedNode);
         setAlertVisible(false);
         setPendingNode(null);
-    }, [previousSelectedNode]);
+    }, []);
 
     const renderItem = useCallback(({ item }: { item: ParsedTreeNode }) => (
         <TreeNodeRow
@@ -170,15 +184,17 @@ export default function TreeScreen() {
                                 onPress={handleConfirmSelection}
                                 className="px-4 py-2 rounded-xl bg-primary"
                             >
-                                <Text className="text-white font-medium">Confirmer</Text>
+                                <Text className="text-black font-medium">Confirmer</Text>
                             </Pressable>
                         </View>
                     </View>
                 </View>
             </Modal>
+
             <Text className="text-text text-3xl font-semibold">
                 Choisissez votre classe
             </Text>
+
             <FlatList
                 data={visibleNodes}
                 keyExtractor={item => `${item.type}-${item.id}`}

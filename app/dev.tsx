@@ -1,5 +1,5 @@
+import { StorageManager } from "@/services/storage";
 import { Link, router } from "expo-router";
-import * as SecureStore from 'expo-secure-store';
 import { Pressable, Text, View } from "react-native";
 
 export default function () {
@@ -19,8 +19,8 @@ export default function () {
                 <Text className="text-text">AdetreeScreen</Text>
             </Link>
             <Pressable onPress={async () => {
-                await SecureStore.deleteItemAsync("username");
-                await SecureStore.deleteItemAsync("password");
+                await StorageManager.Secure.remove("username");
+                await StorageManager.Secure.remove("password");
                 router.replace("/startup");
             }}>
                 <Text className="text-text">Logout</Text>

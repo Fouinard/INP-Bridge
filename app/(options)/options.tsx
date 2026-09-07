@@ -1,12 +1,11 @@
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
-import { useEffect, useRef, useState } from "react";
+import { StorageManager } from "@/services/storage";
 import colors from "@/styles/colors";
-import { router } from "expo-router";
-import { Host, DropdownMenu, DropdownMenuItem, OutlinedButton, Icon, } from '@expo/ui/jetpack-compose';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useRef, useState } from "react";
+import { ScrollView, Text, TextInput, View } from "react-native";
 
-export default function Index() {
+
+export default function Options() {
     const [username, setUsername] = useState<string | null>(null);
     const [password, setPassword] = useState<string | null>(null);
     const [classroom, setClassroom] = useState<string | null>(null);
@@ -17,8 +16,8 @@ export default function Index() {
 
     useEffect(() => {
         const init = async () => {
-            const storedUsername = await SecureStore.getItemAsync("username");
-            const storedPassword = await SecureStore.getItemAsync("password");
+            const storedUsername = await StorageManager.Secure.get("username");
+            const storedPassword = await StorageManager.Secure.get("password");
             setUsername(storedUsername);
             setPassword(storedPassword);
             usernameInputRef.current?.setNativeProps({ text: storedUsername || "" });
@@ -31,10 +30,14 @@ export default function Index() {
     }, [])
 
     useEffect(() => {
-        if (username && password) {
-            SecureStore.setItemAsync("username", username);
-            SecureStore.setItemAsync("password", password);
+        const init = async () => {
+            if (username && password) {
+                await StorageManager.Secure.set("username", username);
+                await StorageManager.Secure.set("password", password);
+            }
         }
+
+        init();
     }, [username, password])
 
     return (
@@ -79,27 +82,6 @@ export default function Index() {
                             Modifier la classe
                         </Text>
                     </Pressable> */}
-                    {/* <Host matchContents>
-                        <DropdownMenu expanded={isExpanded} onDismissRequest={() => setIsExpanded(false)}>
-                            <DropdownMenu.Trigger>
-                                <OutlinedButton onClick={() => setIsExpanded(true)}>
-                                    <Text>Show menu</Text>
-                                </OutlinedButton>
-                            </DropdownMenu.Trigger>
-                            <DropdownMenu.Items>
-                                <DropdownMenuItem onClick={() => { setIsExpanded(false) }}>
-                                    <DropdownMenuItem.Text>
-                                        <Text>Home</Text>
-                                    </DropdownMenuItem.Text>
-                                </DropdownMenuItem>
-                            </DropdownMenu.Items>
-                        </DropdownMenu>
-                    </Host> */}
-                    <Pressable>
-                        <Text className="text-text text-center text-xl">
-                            Modifier ma classe
-                        </Text>
-                    </Pressable>
                 </View>
             </View>
         </ScrollView>

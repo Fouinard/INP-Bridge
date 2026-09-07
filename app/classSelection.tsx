@@ -1,7 +1,8 @@
+import { StorageManager } from "@/services/storage";
 import { DropdownMenu, DropdownMenuItem, Host, OutlinedButton } from '@expo/ui/jetpack-compose';
-import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from "react";
 import { ScrollView, Text } from "react-native";
+
 
 export default function Index() {
     const [username, setUsername] = useState<string | null>(null);
@@ -13,8 +14,8 @@ export default function Index() {
 
     useEffect(() => {
         const init = async () => {
-            const storedUsername = await SecureStore.getItemAsync("username");
-            const storedPassword = await SecureStore.getItemAsync("password");
+            const storedUsername = await StorageManager.Secure.get("username");
+            const storedPassword = await StorageManager.Secure.get("password");
             setUsername(storedUsername);
             setPassword(storedPassword);
         }

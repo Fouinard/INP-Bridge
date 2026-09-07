@@ -86,7 +86,5 @@ export function parseHtmlTree(html: string): ParsedTreeNode[] {
         });
     }
 
-    console.log(nodes)
-
     return nodes;
 }

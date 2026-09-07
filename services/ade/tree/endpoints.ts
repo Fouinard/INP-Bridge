@@ -7,8 +7,6 @@ export async function expandTreeNode(params: TreeExpandParams): Promise<TreeRequ
     const baseUrl = buildBaseUrl(params);
     const key = params.nodeType === "category" ? "category" : "branchId";
     let step = `${key}=${params.nodeId}&expand=false&forceLoad=false&reload=false&scroll=0`
-    console.log(step)
-
 
     const response = await fetch(
         `${baseUrl}/jsp/standard/gui/tree.jsp?${step}`,
@@ -40,7 +38,6 @@ export async function expandTreeNode(params: TreeExpandParams): Promise<TreeRequ
 export async function selectTreeNode(params: TreeRequestParams): Promise<TreeRequestResponse> {
     const baseUrl = buildBaseUrl(params);
     let step = `selectId=${params.nodeId}&reset=false&forceLoad=false&scroll=0`
-    console.log(step)
 
 
     const response = await fetch(

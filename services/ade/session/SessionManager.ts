@@ -1,5 +1,5 @@
+import { StorageManager } from '@/services/storage';
 import { CookieDict, findCookie } from '@/utils/cookies';
-import * as SecureStore from 'expo-secure-store';
 import { ADE_DEFAULTS } from '../constants';
 import { expandTreeNode, selectTreeNode } from '../tree/endpoints';
 import { ExpandableNodeTypes } from '../tree/types';
@@ -30,6 +30,7 @@ export class SessionManager {
         this.loginPromise = (async () => {
             try {
                 await this.createSession();
+                if (!(await StorageManager.Default.get<string[][]>("ADEClassTreeList"))) { return; }
                 await this.selectClass();
             } finally {
                 this.loginPromise = null;
@@ -40,8 +41,8 @@ export class SessionManager {
     }
 
     public async getFormattedCredentials(): Promise<string> {
-        const password = await SecureStore.getItemAsync("password");
-        const username = await SecureStore.getItemAsync("username");
+        const password = await StorageManager.Secure.get("password");
+        const username = await StorageManager.Secure.get("username");
         return btoa(`${username}:${password}`);
     }
 
@@ -67,12 +68,14 @@ export class SessionManager {
     public async selectClass() {
         const creds = await this.getFormattedCredentials();
 
-        // MODIF AVEC SHAREDPREFS POUR CHOIX CLASSE
-        const nodeList = [["category", "trainee"], ["branch", "7"], ["branch", "3719"], ["select", "1198"]];
+        const nodeList = await StorageManager.Default.get<string[][]>("ADEClassTreeList");
+
+        if (!nodeList) {
+            throw new Error("No class tree list found");
+        }
 
         let referer = `https://${ADE_DEFAULTS.endpoint}/${ADE_DEFAULTS.year}/${ADE_DEFAULTS.location}/${ADE_DEFAULTS.type}/jsp/standard/gui/tree.jsp?forceLoad=false&isDirect=true`
         for (const treeNode of nodeList) {
-            // console.log(treeNode)
             if (treeNode[0] == "select") {
                 referer = (await selectTreeNode({ credentials: creds, nodeId: treeNode[1], cookieString: this.getSessionCookies(), referer: referer })).currentUrl;
             } else {
