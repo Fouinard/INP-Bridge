@@ -1,9 +1,5 @@
-import colors from "@/styles/colors";
-import { getHueFromString, getHueStyle } from "@/utils/RandomColor";
 import { formatTime, getDurationFormatted } from "@/utils/Time";
-import { Clock, MapPin, User } from "@getpapillon/papicons";
-import { useState } from "react";
-import { ColorValue, ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 interface BreakData {
     startDate: Date,
