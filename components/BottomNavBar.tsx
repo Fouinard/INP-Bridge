@@ -1,5 +1,5 @@
 import { View, Text, Pressable } from "react-native";
-import { Calendar, TextBubble, Gears, Home, Code } from "@getpapillon/papicons"
+import { Calendar, TextBubble, Gears, Code } from "@getpapillon/papicons"
 import { Link, RelativePathString, usePathname } from "expo-router";
 
 export default function () {

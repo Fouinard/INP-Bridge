@@ -1,19 +1,14 @@
 import Break from "@/components/schedule/Break";
 import Class from "@/components/schedule/Class";
 import { Lesson, Schedule } from "@/services/ade/schedule/Schedule";
-import { dateToNaturalLanguage, getRelativeDate, getPreviousWeekday, getNextWeekday, isSameWeek } from "@/utils/Time";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import { dateToNaturalLanguage, getNextWeekday, getPreviousWeekday, getRelativeDate } from "@/utils/Time";
+import DateTimePicker from '@expo/ui/community/datetime-picker';
 import PagerView, { type PagerViewRef } from '@expo/ui/community/pager-view';
 import { useEffect, useRef, useState } from "react";
-import { Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 export default function () {
-    // const [lessons, setLessons] = useState<Lesson[] | null>(null);
-    const lessonCacheRef = useRef<Lesson[] | null>(null);
-
-    const yesterdayLessonsRef = useRef<Lesson[] | null>(null);
-    const todayLessonsRef = useRef<Lesson[] | null>(null);
-    const tomorrowLessonsRef = useRef<Lesson[] | null>(null);
+    const [lessonsCache, setLessonsCache] = useState<Lesson[]>([]);
 
     const pagerRef = useRef<PagerViewRef>(null);
 
@@ -30,116 +25,77 @@ export default function () {
 
     const [dateDescription, setDateDescription] = useState("Aujourd'hui");
 
-    // const [scheduleInstance, setScheduleInstance] = useState<Schedule | null>(null);
     const scheduleInstance = useRef<Schedule | null>(null);
 
-    // async function getDayLessons(_date: Date) {
-    //     if (lessonCacheRef.current! != null && lessonCacheRef.current!.length > 0) {
-    //         const possibleLessons = lessonCacheRef.current!.filter(lesson =>
-    //             lesson.start.getDate() === _date.getDate() &&
-    //             lesson.start.getMonth() === _date.getMonth() &&
-    //             lesson.start.getFullYear() === _date.getFullYear()
-    //         )
-    //         if(possibleLessons.length > 0) {
-    //             return possibleLessons.sort((a, b) => a.start.getTime() - b.start.getTime());
-    //         }
-    //     }
-    //     if (scheduleInstance == null) {
-    //         setScheduleInstance(new Schedule());
-    //     }
-    //     const lessons = await scheduleInstance!.getWeekLessons(_date);
-    //     setlessonCacheRef.current!(lessons);
-    //     return lessons.filter(lesson =>
-    //         lesson.start.getDate() === _date.getDate() &&
-    //         lesson.start.getMonth() === _date.getMonth() &&
-    //         lesson.start.getFullYear() === _date.getFullYear()
-    //     ).sort((a, b) => a.start.getTime() - b.start.getTime())
-    // }
-
-    const fetchLessons = async (date: Date) => {
+    const fetchLessons = async (_date: Date) => {
+        console.log("Fetching lessons for date:", _date);
         if (scheduleInstance.current == null) {
-            return;
+            scheduleInstance.current = new Schedule();
         }
-
-        const possibleLessons = lessonCacheRef.current?.filter(lesson =>
-            lesson.start.getDate() === date.getDate() &&
-            lesson.start.getMonth() === date.getMonth() &&
-            lesson.start.getFullYear() === date.getFullYear()
-        )
-
-
-        let _todayLessons
-        if (possibleLessons != null && possibleLessons.length > 0) {
-            _todayLessons = lessonCacheRef.current!!
-        } else {
-            _todayLessons = await scheduleInstance.current.getWeekLessons(date);
+        if (lessonsCache != null && lessonsCache.length > 0) {
+            const possibleLessons = lessonsCache.filter(lesson =>
+                lesson.start.getDate() === _date.getDate() &&
+                lesson.start.getMonth() === _date.getMonth() &&
+                lesson.start.getFullYear() === _date.getFullYear()
+            )
+            console.log("Found lessons in cache for date:", _date, possibleLessons);
+            if (possibleLessons.length > 0) {
+                return possibleLessons.sort((a, b) => a.start.getTime() - b.start.getTime());
+            }
         }
+        const fetchedLessons = await scheduleInstance.current.getWeekLessons(_date);
+        setLessonsCache(lessonsCache.concat(fetchedLessons));
+        return fetchedLessons.filter(lesson =>
+            lesson.start.getDate() === _date.getDate() &&
+            lesson.start.getMonth() === _date.getMonth() &&
+            lesson.start.getFullYear() === _date.getFullYear()
+        ).sort((a, b) => a.start.getTime() - b.start.getTime());
+    }
 
-        todayLessonsRef.current = _todayLessons
-            .filter(lesson =>
-                lesson.start.getDate() === date.getDate() &&
-                lesson.start.getMonth() === date.getMonth() &&
-                lesson.start.getFullYear() === date.getFullYear()
-            ).sort((a, b) => a.start.getTime() - b.start.getTime())
+    const changeCurrentDate = (_date: Date) => {
+        setDate(_date);
+        setDateDescription(getRelativeDate(_date));
+        fetchLessons(_date);
+        fetchLessons(getPreviousWeekday(_date));
+        fetchLessons(getNextWeekday(_date));
 
-        const yesterday = getPreviousWeekday(date);
-        const tomorrow = getNextWeekday(date);
-        if (!isSameWeek(yesterday, date)) {
-            const _yesterdayLessons = await scheduleInstance.current.getWeekLessons(yesterday);
-            yesterdayLessonsRef.current = _yesterdayLessons
-                .filter(lesson =>
-                    lesson.start.getDate() === yesterday.getDate() &&
-                    lesson.start.getMonth() === yesterday.getMonth() &&
-                    lesson.start.getFullYear() === yesterday.getFullYear()
-                ).sort((a, b) => a.start.getTime() - b.start.getTime())
-        } else {
-            yesterdayLessonsRef.current = _todayLessons
-                .filter(lesson =>
-                    lesson.start.getDate() === yesterday.getDate() &&
-                    lesson.start.getMonth() === yesterday.getMonth() &&
-                    lesson.start.getFullYear() === yesterday.getFullYear()
-                ).sort((a, b) => a.start.getTime() - b.start.getTime())
-        }
-
-        if (!isSameWeek(tomorrow, date)) {
-            const _tomorrowLessons = await scheduleInstance.current.getWeekLessons(tomorrow);
-            tomorrowLessonsRef.current = _tomorrowLessons
-                .filter(lesson =>
-                    lesson.start.getDate() === tomorrow.getDate() &&
-                    lesson.start.getMonth() === tomorrow.getMonth() &&
-                    lesson.start.getFullYear() === tomorrow.getFullYear()
-                ).sort((a, b) => a.start.getTime() - b.start.getTime())
-        } else {
-            tomorrowLessonsRef.current = _todayLessons
-                .filter(lesson =>
-                    lesson.start.getDate() === tomorrow.getDate() &&
-                    lesson.start.getMonth() === tomorrow.getMonth() &&
-                    lesson.start.getFullYear() === tomorrow.getFullYear()
-                ).sort((a, b) => a.start.getTime() - b.start.getTime())
-        }
-
-        lessonCacheRef.current = _todayLessons;
+        pagerRef.current?.setPageWithoutAnimation(1);
     }
 
     useEffect(() => {
+        setLessonsCache([]);
+        console.log("Initializing lessons cache for date:", date);
         const schedule = new Schedule();
         scheduleInstance.current = schedule;
-        // updateLessonsForDate(date)
-        fetchLessons(date);
+        console.log(date)
+        const init = async () => {
+            await fetchLessons(getPreviousWeekday(date));
+            await fetchLessons(date);
+            await fetchLessons(getNextWeekday(date));
+        }
+        init()
     }, []);
 
-    const getLessonsForDate = (day: -1 | 0 | 1) => {
-        const lessons = [todayLessonsRef.current, tomorrowLessonsRef.current, yesterdayLessonsRef.current];
+    const getLessonsForDate = (_date: Date) => {
+        const possibleLessons = lessonsCache.
+            filter(lesson =>
+                lesson.start.getDate() === _date.getDate() &&
+                lesson.start.getMonth() === _date.getMonth() &&
+                lesson.start.getFullYear() === _date.getFullYear()
+            )
+            .sort((a, b) => a.start.getTime() - b.start.getTime())
         return <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerClassName="flex-col gap-2 pb-[200] mb-4"
         >
-            {
-                lessons[day]?.flatMap((lesson, index, lessonsOfDay) => {
+            {possibleLessons
+                .flatMap((lesson, index, lessonsOfDay) => {
                     const nextLesson = lessonsOfDay[index + 1];
+
                     const hasBreak =
                         nextLesson &&
                         nextLesson.start.getTime() > lesson.end.getTime();
+
                     return [
                         <Class
                             key={`lesson-${lesson.start.getTime()}-${lesson.title}`}
@@ -154,7 +110,7 @@ export default function () {
                                 classType:
                                     lesson.description.match(
                                         /(?<=_)(CM|TD|TP)(?=_)/
-                                    )?.[0] as "CM" | "TD" | "TP" || null,
+                                    )?.[0] as "CM" | "TD" | "TP" | null,
                             }}
                         />,
                         ...(hasBreak
@@ -167,8 +123,7 @@ export default function () {
                             ]
                             : []),
                     ];
-                })
-            }
+                })}
         </ScrollView>
     }
 
@@ -183,11 +138,8 @@ export default function () {
                     is24Hour={true}
                     onValueChange={(event, selectedDate) => {
                         if (selectedDate) {
-                            fetchLessons(selectedDate);
-                            setDate(selectedDate);
-                            setDateDescription(getRelativeDate(selectedDate));
+                            changeCurrentDate(selectedDate);
                         }
-
                         setTimePickerShow(false);
                     }}
                     onDismiss={() => setTimePickerShow(false)}
@@ -209,22 +161,18 @@ export default function () {
                 initialPage={1}
                 className="flex-1"
                 onPageSelected={(event) => {
-                    if (event.nativeEvent.position == 2) {
+                    if (event.nativeEvent.position === 2) {
                         const newDate = getNextWeekday(date);
-                        fetchLessons(newDate);
-                        pagerRef.current?.setPageWithoutAnimation(1);
-                        setDate(newDate);
-                    } else if (event.nativeEvent.position == 0) {
+                        changeCurrentDate(newDate);
+                    } else if (event.nativeEvent.position === 0) {
                         const newDate = getPreviousWeekday(date);
-                        fetchLessons(newDate);
-                        pagerRef.current?.setPageWithoutAnimation(1);
-                        setDate(newDate);
+                        changeCurrentDate(newDate);
                     }
                 }}
             >
-                {getLessonsForDate(-1)}
-                {getLessonsForDate(0)}
-                {getLessonsForDate(1)}
+                {getLessonsForDate(getPreviousWeekday(date))}
+                {getLessonsForDate(date)}
+                {getLessonsForDate(getNextWeekday(date))}
             </PagerView>
         </View>
     );
