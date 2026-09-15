@@ -108,13 +108,15 @@ export default function () {
                     position: 'bottom',
                 })
 
-                if (await StorageManager.Secure.get('ADEClassTreeList') === null) {
+                if (!await StorageManager.Default.get('ADEClassTreeList')) {
                     await StorageManager.Secure.remove('ADEClassTreeList');
                     router.push("/adetreescreen");
                     return;
+                } else {
+                    await SessionManager.getInstance().selectClass();
+                    router.push("/schedule");
                 }
 
-                router.push("/schedule")
             }}>
                 <Text className="text-text text-center">
                     Se connecter

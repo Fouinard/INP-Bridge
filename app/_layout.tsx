@@ -21,11 +21,14 @@ export default function RootLayout() {
             try {
                 const username = await StorageManager.Secure.get("username");
                 const password = await StorageManager.Secure.get("password");
+                const classId = await StorageManager.Default.get("ADEClassTreeList");
 
-                if (username && password) {
-                    router.replace("/schedule");
-                } else {
+                if (!username && !password) {
                     router.replace("/startup");
+                } else if (!classId) {
+                    router.replace("/(options)/adetreescreen")
+                } else {
+                    router.replace("/schedule");
                 }
             } catch (error) {
                 console.error(error);

@@ -112,13 +112,11 @@ export default function TreeScreen() {
         const newSelected = pendingNode;
 
         try {
-            // 1. Inversion des sélections côté ADE
             await ADETreeService.selectNode(newSelected.id);
             if (oldSelected && oldSelected.id !== newSelected.id) {
                 await ADETreeService.selectNode(oldSelected.id);
             }
 
-            // 2. Mise à jour forcée du tableau nodes pour rafraîchir l'UI
             setNodes(prevNodes =>
                 prevNodes.map(n => {
                     if (n.id === newSelected.id) return { ...n, isSelected: true };
@@ -127,10 +125,8 @@ export default function TreeScreen() {
                 })
             );
 
-            // 3. Mise à jour du state selectedNode
             setSelectedNode(newSelected);
 
-            // 4. Persistence locale
             const nodeList = newSelected.parents.map(parent => [parent.type, parent.id]);
             nodeList.push(["select", newSelected.id]);
             await StorageManager.Default.set("ADEClassTreeList", nodeList);
