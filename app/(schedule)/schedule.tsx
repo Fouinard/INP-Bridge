@@ -1,3 +1,4 @@
+import { useStartupContext } from "@/components/contexts/StartupContext";
 import Break from "@/components/schedule/Break";
 import Class from "@/components/schedule/Class";
 import { Lesson, Schedule } from "@/services/ade/schedule/Schedule";
@@ -8,6 +9,9 @@ import { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 export default function () {
+
+    const setStartupReady = useStartupContext();
+
     const [lessonsCache, setLessonsCache] = useState<Lesson[]>([]);
 
     const pagerRef = useRef<PagerViewRef>(null);
@@ -63,6 +67,7 @@ export default function () {
     }
 
     useEffect(() => {
+        setStartupReady();
         setLessonsCache([]);
         console.log("Initializing lessons cache for date:", date);
         const schedule = new Schedule();

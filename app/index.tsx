@@ -1,9 +1,14 @@
-import { Text, View } from "react-native";
+import { Redirect, useLocalSearchParams } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
 
 export default function Index() {
-    return (
-        <View className="flex-1 justify-center items-center bg-bg">
-            <Text className="text-text">Chargement</Text>
-        </View>
-    );
+    const params = useLocalSearchParams<{ target: string }>();
+    const targetRoute = params.target || "/startup";
+
+    useEffect(() => {
+        SplashScreen.hideAsync();
+    }, []);
+
+    return <Redirect href={targetRoute as any} />;
 }

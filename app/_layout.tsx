@@ -1,58 +1,72 @@
 import BottomNavBar from "@/components/BottomNavBar";
+import { StartupProvider } from "@/components/contexts/StartupContext";
 import { StorageManager } from "@/services/storage";
 import "@/styles/global.css";
 import { toastConfig } from "@/styles/ToastsStyle";
 import { useFonts } from 'expo-font';
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router"; // Import de Slot
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import Toast from "react-native-toast-message";
 
+// Garde l'écran natif figé
+SplashScreen.preventAutoHideAsync();
+
 export default function RootLayout() {
-    const [ready, setReady] = useState(false);
-    const router = useRouter();
-    const [loaded] = useFonts({
+    const [dbReady, setDbReady] = useState(false);
+    const [initialRoute, setInitialRoute] = useState<string | null>(null);
+
+    const [fontLoaded] = useFonts({
         'Inter': require('../assets/fonts/Inter-Variable.ttf'),
     });
 
     useEffect(() => {
-        const checkLogin = async () => {
+        const prepareApp = async () => {
             try {
                 const username = await StorageManager.Secure.get("username");
                 const password = await StorageManager.Secure.get("password");
                 const classId = await StorageManager.Default.get("ADEClassTreeList");
 
                 if (!username && !password) {
-                    router.replace("/startup");
+                    setInitialRoute("startup");
                 } else if (!classId) {
-                    router.replace("/(options)/adetreescreen")
+                    setInitialRoute("(options)/adetreescreen");
                 } else {
-                    router.replace("/schedule");
+                    setInitialRoute("(schedule)/schedule");
                 }
             } catch (error) {
                 console.error(error);
-                router.replace("/startup");
+                setInitialRoute("startup");
             } finally {
-                setReady(true);
-                await SplashScreen.hideAsync();
+                setDbReady(true);
             }
         };
-
-        checkLogin();
+        prepareApp();
     }, []);
 
-    if (!ready) {
+    // TANT QUE CE N'EST PAS PRÊT : On renvoie "null", l'écran reste bloqué sur le Splash Screen natif
+    if (!dbReady || !fontLoaded || !initialRoute) {
         return null;
     }
 
-    return <View className="flex-1 max-w-screen">
-        <Stack
-            screenOptions={{
-                headerShown: false
-            }}
-        />
-        <BottomNavBar />
-        <Toast config={toastConfig} />
-    </View>;
+    return (
+        <StartupProvider onReady={() => SplashScreen.hideAsync()}>
+                <View className="flex-1 max-w-screen" style={{ backgroundColor: "#121212" }}>
+                    {/* 
+                    On utilise <Stack> en lui disant STRICTEMENT quel est son écran de départ réel 
+                    via la propriété initialRouteName. Plus besoin de passer par un index !
+                    */}
+                    <Stack 
+                        initialRouteName={initialRoute}
+                        screenOptions={{ 
+                            headerShown: false,
+                            contentStyle: { backgroundColor: "#121212" },
+                        }}
+                    />
+                    <BottomNavBar />
+                    <Toast config={toastConfig} />
+                </View>
+        </StartupProvider>
+    );
 }
