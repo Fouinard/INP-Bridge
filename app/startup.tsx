@@ -1,3 +1,4 @@
+import { useStartupContext } from "@/components/contexts/StartupContext";
 import { SessionManager } from "@/services/ade/session";
 import { StorageManager } from "@/services/storage";
 import colors from "@/styles/colors";
@@ -16,6 +17,9 @@ export default function () {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+
+    const setStartupReady = useStartupContext();
+    setStartupReady();
 
     return (
         <ScrollView className="flex-1 pt-16 bg-bg px-5">

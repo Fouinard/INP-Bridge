@@ -53,10 +53,6 @@ export default function RootLayout() {
     return (
         <StartupProvider onReady={() => SplashScreen.hideAsync()}>
                 <View className="flex-1 max-w-screen" style={{ backgroundColor: "#121212" }}>
-                    {/* 
-                    On utilise <Stack> en lui disant STRICTEMENT quel est son écran de départ réel 
-                    via la propriété initialRouteName. Plus besoin de passer par un index !
-                    */}
                     <Stack 
                         initialRouteName={initialRoute}
                         screenOptions={{ 

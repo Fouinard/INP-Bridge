@@ -3,6 +3,7 @@ import { ParsedTreeNode } from '@/services/ade/tree/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, Text, View } from 'react-native';
 
+import { useStartupContext } from '@/components/contexts/StartupContext';
 import { ADETreeService } from '@/services/ade/tree/TreeService';
 import { StorageManager } from '@/services/storage';
 import { useRouter } from 'expo-router';
@@ -17,6 +18,7 @@ export default function TreeScreen() {
     const [selectedNode, setSelectedNode] = useState<ParsedTreeNode | null>(null);
     const [alertVisible, setAlertVisible] = useState(false);
     const [pendingNode, setPendingNode] = useState<ParsedTreeNode | null>(null);
+    const setStartupReady = useStartupContext();
 
     const visibleNodes = useMemo(() => {
         return nodes.filter(node => {
@@ -73,6 +75,7 @@ export default function TreeScreen() {
 
     useEffect(() => {
         let isMounted = true;
+        setStartupReady();
 
         async function loadInitialTree() {
             try {
