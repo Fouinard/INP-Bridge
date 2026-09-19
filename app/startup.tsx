@@ -1,3 +1,4 @@
+import EyeIcon from "@/assets/icons/eyeicon.svg";
 import { useStartupContext } from "@/components/contexts/StartupContext";
 import { SessionManager } from "@/services/ade/session";
 import { StorageManager } from "@/services/storage";
@@ -18,6 +19,8 @@ export default function () {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
+    const [hiddenPassword, setHiddenPassword] = useState(true);
+
     const setStartupReady = useStartupContext();
     setStartupReady();
 
@@ -33,22 +36,32 @@ export default function () {
                     </Text>
                     <TextInput
                         placeholder="nomp"
-                        className="text-text border border-text p-2 rounded-md"
+                        className="text-text border border-text px-3 h-12 rounded-md justify-center"
                         placeholderTextColor={colors.grey}
                         onChangeText={setUsername}
                     />
                 </View>
+
+                {/* Champ Mot de passe */}
                 <View className="flex flex-col gap-2">
                     <Text className="text-text text-xl">
                         Mot de passe
                     </Text>
-                    <TextInput
-                        placeholder="••••••••••••••"
-                        onChangeText={setPassword}
-                        className="text-text border border-text p-2 rounded-md"
-                        placeholderTextColor={colors.grey}
-                        secureTextEntry
-                    />
+                    <View className="flex-row items-center border border-text rounded-md px-3 h-12">
+                        <TextInput
+                            placeholder="••••••••••••••"
+                            onChangeText={setPassword}
+                            className="flex-1 text-text h-full p-0"
+                            placeholderTextColor={colors.grey}
+                            secureTextEntry={hiddenPassword}
+                        />
+                        <Pressable
+                            onPress={() => setHiddenPassword(!hiddenPassword)}
+                            className="justify-center items-center ml-2"
+                        >
+                            <EyeIcon stroke={"white"} />
+                        </Pressable>
+                    </View>
                 </View>
                 <Pressable
                     onPress={() => setPrivacyChecked(!privacyChecked)}

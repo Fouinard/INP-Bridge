@@ -27,7 +27,6 @@ export default function RootLayout() {
                 const username = await StorageManager.Secure.get("username");
                 const password = await StorageManager.Secure.get("password");
                 const classId = await StorageManager.Default.get("ADEClassTreeList");
-
                 if (!username && !password) {
                     setInitialRoute("startup");
                 } else if (!classId) {
@@ -39,6 +38,7 @@ export default function RootLayout() {
                 console.error(error);
                 setInitialRoute("startup");
             } finally {
+                setInitialRoute("startup");
                 setDbReady(true);
             }
         };
