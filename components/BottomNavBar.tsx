@@ -3,7 +3,7 @@ import { Calendar, TextBubble, Gears, Code } from "@getpapillon/papicons"
 import { Link, RelativePathString, usePathname } from "expo-router";
 
 export default function () {
-    const disabledPathnames = ["/startup"]
+    const disabledPathnames = ["/startup", "/adetreescreen"]
     const pathname = usePathname();
     const navBar = [
         {

@@ -2,37 +2,36 @@ import { useStartupContext } from "@/components/contexts/StartupContext";
 import Break from "@/components/schedule/Break";
 import Class from "@/components/schedule/Class";
 import { Lesson, Schedule } from "@/services/ade/schedule/Schedule";
-import { dateToNaturalLanguage, getNextWeekday, getPreviousWeekday, getRelativeDate } from "@/utils/Time";
+import { dateToNaturalLanguage, getNextWeekday, getPreviousWeekday, getRelativeDate, getClosestDay } from "@/utils/Time";
 import DateTimePicker from '@expo/ui/community/datetime-picker';
 import PagerView, { type PagerViewRef } from '@expo/ui/community/pager-view';
-import { useEffect, useRef, useState } from "react";
+import { JSX, useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 export default function () {
-
     const setStartupReady = useStartupContext();
-
     const [lessonsCache, setLessonsCache] = useState<Lesson[]>([]);
-
+    // const [renderedPages, setRenderedPages] = useState<JSX.Element[]>([]);
     const pagerRef = useRef<PagerViewRef>(null);
-
     const [date, setDate] = useState(() => {
         const today = new Date();
-        if ([0, 6].includes(today.getDay())) {
-            today.setDate(today.getDate() + (today.getDay() == 0 ? 1 : -2));
-        }
-        today.setHours(0, 0, 0, 0);
-        return today;
+        const closestDay = getClosestDay(today);
+        closestDay.setHours(0, 0, 0, 0);
+        return closestDay;
     });
 
+    useEffect(() => {
+        const timer = requestAnimationFrame(() => {
+            pagerRef.current?.setPageWithoutAnimation(1);
+        });
+        return () => cancelAnimationFrame(timer);
+    }, [date]);
+
     const [timePickerShow, setTimePickerShow] = useState(false);
-
-    const [dateDescription, setDateDescription] = useState("Aujourd'hui");
-
+    const [dateDescription, setDateDescription] = useState(getRelativeDate(date));
     const scheduleInstance = useRef<Schedule | null>(null);
 
     const fetchLessons = async (_date: Date) => {
-        console.log("Fetching lessons for date:", _date);
         if (scheduleInstance.current == null) {
             scheduleInstance.current = new Schedule();
         }
@@ -42,7 +41,6 @@ export default function () {
                 lesson.start.getMonth() === _date.getMonth() &&
                 lesson.start.getFullYear() === _date.getFullYear()
             )
-            console.log("Found lessons in cache for date:", _date, possibleLessons);
             if (possibleLessons.length > 0) {
                 return possibleLessons.sort((a, b) => a.start.getTime() - b.start.getTime());
             }
@@ -57,26 +55,29 @@ export default function () {
     }
 
     const changeCurrentDate = (_date: Date) => {
+        _date = getClosestDay(_date);
+        _date.setHours(0, 0, 0, 0);
         setDate(_date);
         setDateDescription(getRelativeDate(_date));
         fetchLessons(_date);
         fetchLessons(getPreviousWeekday(_date));
         fetchLessons(getNextWeekday(_date));
-
-        pagerRef.current?.setPageWithoutAnimation(1);
     }
 
     useEffect(() => {
         setStartupReady();
         setLessonsCache([]);
-        console.log("Initializing lessons cache for date:", date);
         const schedule = new Schedule();
         scheduleInstance.current = schedule;
-        console.log(date)
         const init = async () => {
             await fetchLessons(getPreviousWeekday(date));
             await fetchLessons(date);
             await fetchLessons(getNextWeekday(date));
+            // setRenderedPages([
+            //     getLessonsForDate(getPreviousWeekday(date)),
+            //     getLessonsForDate(date),
+            //     getLessonsForDate(getNextWeekday(date))
+            // ]);
         }
         init()
     }, []);
@@ -178,6 +179,7 @@ export default function () {
                 {getLessonsForDate(getPreviousWeekday(date))}
                 {getLessonsForDate(date)}
                 {getLessonsForDate(getNextWeekday(date))}
+                {/* {renderedPages} */}
             </PagerView>
         </View>
     );

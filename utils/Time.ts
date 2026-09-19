@@ -104,3 +104,13 @@ export const isSameWeek = (date1: Date, date2: Date): boolean => {
 
     return getWeekStart(date1).getTime() === getWeekStart(date2).getTime();
 };
+
+export const getClosestDay = (date: Date): Date => {
+    if(date.getDay() == 0 || date.getDay() == 6) {
+        const closestMonday = new Date(date);
+        closestMonday.setDate(date.getDate() + (date.getDay() === 0 ? 1 : 8 - date.getDay()));
+        closestMonday.setHours(0, 0, 0, 0);
+        return closestMonday;
+    }
+    return date;
+}
