@@ -38,7 +38,7 @@ export default function RootLayout() {
                 console.error(error);
                 setInitialRoute("startup");
             } finally {
-                setInitialRoute("startup");
+                // setInitialRoute("startup");
                 setDbReady(true);
             }
         };
