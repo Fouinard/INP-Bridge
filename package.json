@@ -22,6 +22,7 @@
     "expo": "~57.0.20",
     "expo-checkbox": "~57.0.0",
     "expo-constants": "~57.0.17",
+    "expo-dev-client": "~57.0.19",
     "expo-file-system": "~57.0.6",
     "expo-font": "~57.0.3",
     "expo-image": "~57.0.4",

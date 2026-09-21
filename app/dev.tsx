@@ -1,6 +1,7 @@
-import { StorageManager } from "@/services/storage";
+import { StorageManager } from "@/shared/services/storage/storage";
 import { Link, router } from "expo-router";
 import { Pressable, Text, View } from "react-native";
+import Toast from "react-native-toast-message";
 
 export default function () {
     return (
@@ -27,7 +28,10 @@ export default function () {
             </Pressable>
             <Pressable onPress={async () => {
                 await StorageManager.Default.remove("ADEClassTreeList");
-                router.replace("/startup");
+                Toast.show({
+                    type: "success",
+                    text1: "Class cleared"
+                })
             }}>
                 <Text className="text-text">Clear class</Text>
             </Pressable>

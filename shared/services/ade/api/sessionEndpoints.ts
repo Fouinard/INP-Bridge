@@ -1,6 +1,6 @@
 import { CookieDict, findCookie, getCookies } from "@/utils/cookies";
-import { ADE_DEFAULTS, buildBaseUrl } from "../constants";
-import { ADEAuthenticatedParams, ADESessionParams } from "./types";
+import { ADEAuthenticatedParams, ADESessionParams } from "../types/session.types";
+import { ADE_DEFAULTS, buildBaseUrl } from "./constants";
 
 export async function createSession(params: ADEAuthenticatedParams): Promise<CookieDict> {
     const baseUrl = buildBaseUrl(params);

@@ -1,6 +1,6 @@
-import { buildBaseUrl } from "../constants";
-import { ADESessionParams } from "../session";
-import { TreeExpandParams, TreeRequestParams, TreeRequestResponse } from "./types";
+import { ADESessionParams } from "../types/session.types";
+import { TreeExpandParams, TreeRequestParams, TreeRequestResponse } from "../types/tree.types";
+import { buildBaseUrl } from "./constants";
 
 export async function expandTreeNode(params: TreeExpandParams): Promise<TreeRequestResponse> {
 
@@ -17,7 +17,6 @@ export async function expandTreeNode(params: TreeExpandParams): Promise<TreeRequ
                 "Content-Type": "application/x-www-form-urlencoded",
                 "Cookie": params.cookieString,
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-
             },
             method: "GET",
             credentials: "omit"
@@ -30,9 +29,7 @@ export async function expandTreeNode(params: TreeExpandParams): Promise<TreeRequ
 
     const buffer = await response.arrayBuffer();
 
-    const cleanHtml = decodeLatin1(buffer);
-
-    return { currentUrl: `${baseUrl}/jsp/standard/gui/tree.jsp?${step}`, htmlResponse: cleanHtml };
+    return { currentUrl: `${baseUrl}/jsp/standard/gui/tree.jsp?${step}`, htmlResponseBuffer: buffer };
 }
 
 export async function selectTreeNode(params: TreeRequestParams): Promise<TreeRequestResponse> {
@@ -62,9 +59,7 @@ export async function selectTreeNode(params: TreeRequestParams): Promise<TreeReq
 
     const buffer = await response.arrayBuffer();
 
-    const cleanHtml = decodeLatin1(buffer);
-
-    return { currentUrl: `${baseUrl}/jsp/standard/gui/tree.jsp?${step}`, htmlResponse: cleanHtml };
+    return { currentUrl: `${baseUrl}/jsp/standard/gui/tree.jsp?${step}`, htmlResponseBuffer: buffer };
 }
 
 export async function fetchTreeRootEndpoint(params: ADESessionParams): Promise<TreeRequestResponse> {
@@ -91,21 +86,5 @@ export async function fetchTreeRootEndpoint(params: ADESessionParams): Promise<T
 
     const buffer = await response.arrayBuffer();
 
-    const cleanHtml = decodeLatin1(buffer);
-
-
-    return { currentUrl: `${baseUrl}/jsp/standard/gui/tree.jsp`, htmlResponse: cleanHtml };
-}
-
-export function decodeLatin1(buffer: ArrayBuffer): string {
-    const bytes = new Uint8Array(buffer);
-    let result = '';
-    const chunkSize = 8192;
-
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-        const chunk = bytes.subarray(i, i + chunkSize);
-        result += String.fromCharCode.apply(null, Array.from(chunk));
-    }
-
-    return result;
+    return { currentUrl: `${baseUrl}/jsp/standard/gui/tree.jsp`, htmlResponseBuffer: buffer };
 }

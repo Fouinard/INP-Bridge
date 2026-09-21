@@ -1,7 +1,7 @@
-import { buildIcalQueryParams } from "@/services/ade/schedule/buildIcalParams";
-import { ADEGetIcalParams } from "@/services/ade/schedule/types";
-import { buildBaseUrl } from "@/services/ade/session";
+import buildIcalQueryParams from "@/shared/services/ade/utils/buildIcalQueryParams";
 import { getWeekdays } from "@/utils/Time";
+import { ADEGetIcalParams } from "../types/schedule.types";
+import { buildBaseUrl } from "./constants";
 
 export async function getIcal(params: ADEGetIcalParams): Promise<string> {
 

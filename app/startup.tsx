@@ -1,7 +1,8 @@
 import EyeIcon from "@/assets/icons/eyeicon.svg";
 import { useStartupContext } from "@/components/contexts/StartupContext";
-import { SessionManager } from "@/services/ade/session";
-import { StorageManager } from "@/services/storage";
+import { ADEApi } from "@/shared/services/ade/adeApi";
+import { SessionManager } from "@/shared/services/ade/session/SessionManager";
+import { StorageManager } from "@/shared/services/storage/storage";
 import colors from "@/styles/colors";
 import { Checkbox } from "expo-checkbox";
 import { useRouter } from "expo-router";
@@ -108,7 +109,7 @@ export default function () {
                 }
                 Toast.hide()
                 try {
-                    await SessionManager.getInstance().createSession({ username, password });
+                    await ADEApi.Auth.createSession({ username, password });
                 } catch (error) {
                     Toast.show({
                         type: 'error',
@@ -125,12 +126,14 @@ export default function () {
                     position: 'bottom',
                 })
 
-                if (!await StorageManager.Default.get('ADEClassTreeList')) {
+                const hasClassSelected = await StorageManager.Default.get<string[][]>('ADEClassTreeList');
+
+                if (!hasClassSelected) {
                     await StorageManager.Secure.remove('ADEClassTreeList');
                     router.push("/adetreescreen");
                     return;
                 } else {
-                    await SessionManager.getInstance().selectClass();
+                    await SessionManager.getInstance().selectClass(hasClassSelected);
                     router.push("/schedule");
                 }
 

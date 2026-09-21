@@ -1,4 +1,4 @@
-import { StorageManager } from "@/services/storage";
+import { StorageManager } from "@/shared/services/storage/storage";
 import colors from "@/styles/colors";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useRef, useState } from "react";

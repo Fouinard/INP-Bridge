@@ -1,12 +1,7 @@
 import { formatNumber } from "@/utils/Numbers";
+import { DateRangeParams } from "../types/schedule.types";
 
-export interface DateRangeParams {
-  startDate: Date;
-  endDate: Date;
-}
-
-export function buildIcalQueryParams(params: DateRangeParams) {
-
+export default function buildIcalQueryParams(params: DateRangeParams) {
   return new URLSearchParams({
     clearTree: "false",
     startDay: formatNumber(params.startDate.getDate()),

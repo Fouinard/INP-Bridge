@@ -1,11 +1,11 @@
 import { TreeNodeRow } from '@/components/class_selector/TreeNodeRow';
-import { ParsedTreeNode } from '@/services/ade/tree/types';
+import { ParsedTreeNode } from '@/features/tree/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, Text, View } from 'react-native';
 
 import { useStartupContext } from '@/components/contexts/StartupContext';
-import { ADETreeService } from '@/services/ade/tree/TreeService';
-import { StorageManager } from '@/services/storage';
+import { ADETreeService } from '@/features/tree/TreeService';
+import { StorageManager } from '@/shared/services/storage/storage';
 import { useRouter } from 'expo-router';
 
 export default function TreeScreen() {
@@ -80,7 +80,7 @@ export default function TreeScreen() {
         async function loadInitialTree() {
             try {
                 setLoadingNodeId('root');
-                const rootNodes = await ADETreeService.fetchTreeRoot({});
+                const rootNodes = await ADETreeService.fetchTreeRoot();
 
                 if (isMounted) {
                     setNodes(rootNodes);

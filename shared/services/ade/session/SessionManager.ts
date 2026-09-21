@@ -1,10 +1,10 @@
-import { StorageManager } from '@/services/storage';
+import { StorageManager } from '@/shared/services/storage/storage';
 import { CookieDict, findCookie } from '@/utils/cookies';
-import { ADE_DEFAULTS } from '../constants';
-import { expandTreeNode, selectTreeNode } from '../tree/endpoints';
-import { ExpandableNodeTypes } from '../tree/types';
-import { createSession, valiateSession } from './endpoints';
-import { ADESessionParams } from './types';
+import { ExpandableNodeTypes } from '../../../../features/tree/types';
+import { ADE_DEFAULTS } from '../api/constants';
+import { createSession, valiateSession } from '../api/sessionEndpoints';
+import { expandTreeNode, selectTreeNode } from '../api/treeEndpoints';
+import { ADESessionParams } from '../types/session.types';
 
 export class SessionManager {
     private static instance: SessionManager | null = null;
@@ -29,9 +29,16 @@ export class SessionManager {
 
         this.loginPromise = (async () => {
             try {
-                await this.createSession();
-                if (!(await StorageManager.Default.get<string[][]>("ADEClassTreeList"))) { return; }
-                await this.selectClass();
+                const username = await StorageManager.Secure.get("username");
+                const password = await StorageManager.Secure.get("password");
+                if (!username || !password) {
+                    throw new Error("Missing login credentials.");
+                }
+                await this.createSession({ username, password });
+                const hasClassSelected = await StorageManager.Default.get<string[][]>("ADEClassTreeList");
+                if (hasClassSelected) {
+                    await this.selectClass(hasClassSelected);
+                }
             } finally {
                 this.loginPromise = null;
             }
@@ -50,11 +57,8 @@ export class SessionManager {
         return Object.entries(this.cookies).map(([name, cookie]) => `${cookie.value}`).join("; ");
     }
 
-    public async createSession(credentialsOverride?: { username: string, password: string }) {
-        let creds = await this.getFormattedCredentials();
-        if (credentialsOverride) {
-            creds = btoa(`${credentialsOverride.username}:${credentialsOverride.password}`);
-        }
+    public async createSession(credentials: { username: string, password: string }) {
+        const creds = btoa(`${credentials.username}:${credentials.password}`);
         try {
             this.cookies = { ...this.cookies, ...await createSession({ credentials: creds }) };
         } catch (error) {
@@ -68,10 +72,10 @@ export class SessionManager {
         }
     }
 
-    public async selectClass() {
+    public async selectClass(nodeListOverride?: string[][]) {
         const creds = await this.getFormattedCredentials();
 
-        const nodeList = await StorageManager.Default.get<string[][]>("ADEClassTreeList");
+        const nodeList = nodeListOverride || await StorageManager.Default.get<string[][]>("ADEClassTreeList");
 
         if (!nodeList) {
             throw new Error("No class tree list found");

@@ -1,4 +1,4 @@
-import { ParsedTreeNode } from "@/services/ade/tree/types";
+import { ParsedTreeNode } from "@/features/tree/types";
 import { ChevronRight } from "@getpapillon/papicons";
 import Checkbox from "expo-checkbox";
 import { memo } from "react";

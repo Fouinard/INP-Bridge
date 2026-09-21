@@ -1,7 +1,7 @@
 import { parse } from 'node-html-parser';
-import { NodeType, ParentNode, ParsedTreeNode } from "./types";
+import { NodeType, ParentNode, ParsedTreeNode } from "../../../../features/tree/types";
 
-export function parseHtmlTree(html: string): ParsedTreeNode[] {
+export default function parseHtmlTree(html: string): ParsedTreeNode[] {
     const root = parse(html);
     const nodes: ParsedTreeNode[] = [];
 

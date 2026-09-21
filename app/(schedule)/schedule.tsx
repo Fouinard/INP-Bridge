@@ -1,7 +1,9 @@
 import { useStartupContext } from "@/components/contexts/StartupContext";
 import Break from "@/components/schedule/Break";
 import Class from "@/components/schedule/Class";
-import { Lesson, Schedule } from "@/services/ade/schedule/Schedule";
+import { Schedule } from "@/features/schedule/Schedule";
+import { ADEApi } from "@/shared/services/ade/adeApi";
+import { ParsedLesson } from "@/types/schedule.types";
 import { dateToNaturalLanguage, getClosestDay, getNextWeekday, getPreviousWeekday, getRelativeDate } from "@/utils/Time";
 import DateTimePicker from '@expo/ui/community/datetime-picker';
 import PagerView, { type PagerViewRef } from '@expo/ui/community/pager-view';
@@ -18,7 +20,7 @@ const formatDateKey = (d: Date): string => {
 export default function ScheduleScreen() {
     const setStartupReady = useStartupContext();
 
-    const [lessonsCache, setLessonsCache] = useState<Record<string, Lesson[] | null>>({});
+    const [lessonsCache, setLessonsCache] = useState<Record<string, ParsedLesson[] | null>>({});
 
     const pagerRef = useRef<PagerViewRef>(null);
     // const isUpdatingDateRef = useRef(false);
@@ -64,13 +66,13 @@ export default function ScheduleScreen() {
         if (lessonsCache[dateKey] !== undefined) return;
 
         try {
-            const fetchedLessons = await scheduleInstance.current.getWeekLessons(_date);
+            const fetchedLessons = await ADEApi.Schedule.getIcal(_date);
 
-            const groupedFetched: Record<string, Lesson[]> = {};
+            const groupedFetched: Record<string, ParsedLesson[]> = {};
 
             fetchedLessons.forEach(l => {
-                const startDate = safeDate(l.start);
-                const endDate = safeDate(l.end);
+                const startDate = safeDate(l.startDate);
+                const endDate = safeDate(l.endDate);
 
                 if (startDate && endDate && startDate.getTime() < endDate.getTime()) {
                     const key = formatDateKey(startDate);
@@ -78,8 +80,8 @@ export default function ScheduleScreen() {
 
                     groupedFetched[key].push({
                         ...l,
-                        start: startDate,
-                        end: endDate
+                        startDate: startDate,
+                        endDate: endDate
                     });
                 }
             });
@@ -92,13 +94,13 @@ export default function ScheduleScreen() {
                 }
 
                 Object.keys(groupedFetched).forEach(k => {
-                    const dayLessons = groupedFetched[k].sort((a, b) => a.start.getTime() - b.start.getTime());
+                    const dayLessons = groupedFetched[k].sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
 
-                    const uniqueLessons: Lesson[] = [];
+                    const uniqueLessons: ParsedLesson[] = [];
                     const seen = new Set<string>();
 
                     for (const lesson of dayLessons) {
-                        const uniqueKey = `${lesson.start.getTime()}-${lesson.end.getTime()}-${lesson.title}`;
+                        const uniqueKey = `${lesson.startDate.getTime()}-${lesson.endDate.getTime()}-${lesson.subject}`;
                         if (!seen.has(uniqueKey)) {
                             seen.add(uniqueKey);
                             uniqueLessons.push(lesson);
@@ -149,27 +151,20 @@ export default function ScheduleScreen() {
 
                     const hasBreak = Boolean(
                         nextLesson &&
-                        nextLesson.start.getTime() > lesson.end.getTime() &&
-                        (nextLesson.start.getTime() - lesson.end.getTime()) > 60000
+                        nextLesson.startDate.getTime() > lesson.endDate.getTime() &&
+                        (nextLesson.startDate.getTime() - lesson.endDate.getTime()) > 60000
                     );
 
                     return [
                         <Class
-                            key={`lesson-${lesson.start.getTime()}-${index}`}
-                            classData={{
-                                endDate: lesson.end,
-                                startDate: lesson.start,
-                                room: lesson.location ? lesson.location.replace(" (V)", "") : "",
-                                subject: lesson.title,
-                                teacher: lesson.description ? (lesson.description.match(/^[^\d\n]+$/gm)?.[0] || "N/A") : "N/A",
-                                classType: lesson.description ? (lesson.description.match(/(?<=_)(CM|TD|TP)(?=_)/)?.[0] as "CM" | "TD" | "TP" | null) : null,
-                            }}
+                            key={`lesson-${lesson.startDate.getTime()}-${index}`}
+                            classData={lesson}
                         />,
                         ...(hasBreak ? [
                             <Break
-                                key={`break-${lesson.end.getTime()}-${nextLesson.start.getTime()}`}
-                                startDate={lesson.end}
-                                endDate={nextLesson.start}
+                                key={`break-${lesson.endDate.getTime()}-${nextLesson.startDate.getTime()}`}
+                                startDate={lesson.endDate}
+                                endDate={nextLesson.startDate}
                             />
                         ] : []),
                     ];

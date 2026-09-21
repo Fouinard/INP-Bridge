@@ -1,10 +1,10 @@
 import BottomNavBar from "@/components/BottomNavBar";
 import { StartupProvider } from "@/components/contexts/StartupContext";
-import { StorageManager } from "@/services/storage";
+import { StorageManager } from "@/shared/services/storage/storage";
 import "@/styles/global.css";
 import { toastConfig } from "@/styles/ToastsStyle";
 import { useFonts } from 'expo-font';
-import { Stack } from "expo-router"; // Import de Slot
+import { Redirect, RelativePathString, Stack } from "expo-router"; // Import de Slot
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
@@ -38,7 +38,6 @@ export default function RootLayout() {
                 console.error(error);
                 setInitialRoute("startup");
             } finally {
-                setInitialRoute("startup");
                 setDbReady(true);
             }
         };
@@ -54,12 +53,12 @@ export default function RootLayout() {
         <StartupProvider onReady={() => SplashScreen.hideAsync()}>
                 <View className="flex-1 max-w-screen" style={{ backgroundColor: "#121212" }}>
                     <Stack 
-                        initialRouteName={initialRoute}
                         screenOptions={{ 
                             headerShown: false,
                             contentStyle: { backgroundColor: "#121212" },
                         }}
                     />
+                    <Redirect href={initialRoute as RelativePathString} />
                     <BottomNavBar />
                     <Toast config={toastConfig} />
                 </View>
