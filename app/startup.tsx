@@ -130,7 +130,7 @@ export default function () {
 
                 if (!hasClassSelected) {
                     await StorageManager.Secure.remove('ADEClassTreeList');
-                    router.push("/adetreescreen");
+                    router.push("/treeselector");
                     return;
                 } else {
                     await SessionManager.getInstance().selectClass(hasClassSelected);

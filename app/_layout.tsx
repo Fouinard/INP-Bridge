@@ -30,7 +30,7 @@ export default function RootLayout() {
                 if (!username && !password) {
                     setInitialRoute("startup");
                 } else if (!classId) {
-                    setInitialRoute("(options)/adetreescreen");
+                    setInitialRoute("(options)/treeselector");
                 } else {
                     setInitialRoute("(schedule)/schedule");
                 }
