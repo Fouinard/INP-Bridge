@@ -9,7 +9,7 @@ export default function () {
         {
             icon: Calendar,
             text: "Cours",
-            open: ["/schedule"]
+            open: ["/schedule", "/multipleLessons"]
         }, {
             icon: Gears,
             text: "Options",

@@ -1,11 +1,13 @@
 import { useStartupContext } from "@/components/contexts/StartupContext";
+import { useLessonsContext } from "@/components/contexts/LessonsContext";
 import Break from "@/components/schedule/Break";
 import Class from "@/components/schedule/Class";
+import MultipleLessons from "@/components/schedule/MultipleLessons";
 import { Lesson, Schedule } from "@/services/ade/schedule/Schedule";
 import { dateToNaturalLanguage, getClosestDay, getNextWeekday, getPreviousWeekday, getRelativeDate } from "@/utils/Time";
 import DateTimePicker from '@expo/ui/community/datetime-picker';
 import PagerView, { type PagerViewRef } from '@expo/ui/community/pager-view';
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { JSX, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 
 const formatDateKey = (d: Date): string => {
@@ -17,6 +19,7 @@ const formatDateKey = (d: Date): string => {
 
 export default function ScheduleScreen() {
     const setStartupReady = useStartupContext();
+    const lessonsContext = useLessonsContext();
 
     const [lessonsCache, setLessonsCache] = useState<Record<string, Lesson[] | null>>({});
 
@@ -115,68 +118,130 @@ export default function ScheduleScreen() {
         }
     }, [lessonsCache]);
 
-    const renderLessonsForDate = useCallback((_date: Date) => {
-        const dateKey = formatDateKey(_date);
-        const dayCache = lessonsCache[dateKey];
+    const renderLessonsForDate = useCallback(
+        (_date: Date, needToStoreData?: boolean) => {
+            const dateKey = formatDateKey(_date);
+            const dayCache = lessonsCache[dateKey];
 
-        // jour pas fetch -> chargement
-        if (dayCache === undefined) {
-            return (
-                <View className="justify-center items-center h-full">
-                    <ActivityIndicator size="large" color="#687076" />
-                    <Text className="text-text mt-3 text-base font-medium">Chargement...</Text>
-                </View>
-            );
-        }
+            // Jour pas encore fetch -> chargement
+            if (dayCache === undefined) {
+                return (
+                    <View className="justify-center items-center h-full">
+                        <ActivityIndicator size="large" color="#687076" />
+                        <Text className="text-text mt-3 text-base font-medium">
+                            Chargement...
+                        </Text>
+                    </View>
+                );
+            }
 
-        // jour fetch, mais pas de cours
-        if (dayCache === null || dayCache.length === 0) {
-            return (
-                <View className="justify-center items-center h-full" >
-                    <Text className="text-text text-base font-medium">Aucun cours aujourd'hui.</Text>
-                </View>
-            );
-        }
+            // Jour fetch, mais pas de cours
+            if (dayCache === null || dayCache.length === 0) {
+                return (
+                    <View className="justify-center items-center h-full">
+                        <Text className="text-text text-base font-medium">
+                            Aucun cours aujourd'hui.
+                        </Text>
+                    </View>
+                );
+            }
 
-        // jour fetch et cours
-        return (
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerClassName="flex-col gap-2 pb-[200] mb-4"
-            >
-                {dayCache.flatMap((lesson, index, lessonsOfDay) => {
-                    const nextLesson = lessonsOfDay[index + 1];
+            const lessonsBlocks: JSX.Element[] = [];
 
-                    const hasBreak = Boolean(
-                        nextLesson &&
-                        nextLesson.start.getTime() > lesson.end.getTime() &&
-                        (nextLesson.start.getTime() - lesson.end.getTime()) > 60000
+            dayCache.forEach((lesson, index, lessonsOfDay) => {
+                // Si ce cours appartient à un groupe déjà traité,
+                // on ne le traite pas une deuxième fois.
+                if (
+                    index > 0 &&
+                    lessonsOfDay[index - 1].start.getTime() === lesson.start.getTime()
+                ) {
+                    return;
+                }
+
+                // Récupère tous les cours qui commencent en même temps
+                const multipleLessons = lessonsOfDay.filter(
+                    l => l.start.getTime() === lesson.start.getTime()
+                );
+
+                // Le dernier cours du groupe détermine la fin du groupe.
+                // C'est important pour calculer correctement la pause suivante.
+                const groupEnd = Math.max(
+                    ...multipleLessons.map(l => l.end.getTime())
+                );
+
+                // Cherche le premier cours qui commence après ce groupe
+                const nextLesson = lessonsOfDay.find(
+                    l => l.start.getTime() > lesson.start.getTime()
+                );
+
+                // Render du cours / groupe de cours
+                if (multipleLessons.length > 1) {
+                    if (needToStoreData) {
+                        lessonsContext.setLessons(multipleLessons);
+                        lessonsContext.setDate(_date);
+                        lessonsContext.setHours(lesson.start.getHours(), new Date(groupEnd).getHours());
+                    }
+                    lessonsBlocks.push(
+                        <MultipleLessons
+                            key={`multiple-lessons-${lesson.start.getTime()}`}
+                            startDate={lesson.start}
+                            endDate={new Date(groupEnd)}
+                            lessons={multipleLessons}
+                        />,
                     );
-
-                    return [
+                } else {
+                    lessonsBlocks.push(
                         <Class
-                            key={`lesson-${lesson.start.getTime()}-${index}`}
+                            key={`lesson-${lesson.start.getTime()}-${lesson.title}`}
                             classData={{
                                 endDate: lesson.end,
                                 startDate: lesson.start,
-                                room: lesson.location ? lesson.location.replace(" (V)", "") : "",
+                                room: lesson.location
+                                    ? lesson.location.replace(" (V)", "")
+                                    : "",
                                 subject: lesson.title,
-                                teacher: lesson.description ? (lesson.description.match(/^[^\d\n]+$/gm)?.[0] || "N/A") : "N/A",
-                                classType: lesson.description ? (lesson.description.match(/(?<=_)(CM|TD|TP)(?=_)/)?.[0] as "CM" | "TD" | "TP" | null) : null,
+                                teacher:
+                                    lesson.description?.match(
+                                        /^[^\d\n]+$/gm,
+                                    )?.[0] || "N/A",
+                                classType:
+                                    (lesson.description?.match(
+                                        /(?<=_)(CM|TD|TP)(?=_)/
+                                    )?.[0] as "CM" | "TD" | "TP" | null) || null,
                             }}
                         />,
-                        ...(hasBreak ? [
-                            <Break
-                                key={`break-${lesson.end.getTime()}-${nextLesson.start.getTime()}`}
-                                startDate={lesson.end}
-                                endDate={nextLesson.start}
-                            />
-                        ] : []),
-                    ];
-                })}
-            </ScrollView>
-        );
-    }, [lessonsCache]);
+                    );
+                }
+
+                // Pause après le cours / groupe de cours
+                const hasBreak = Boolean(
+                    nextLesson &&
+                    nextLesson.start.getTime() > groupEnd &&
+                    nextLesson.start.getTime() - groupEnd > 60000,
+                );
+
+                if (hasBreak && nextLesson) {
+                    lessonsBlocks.push(
+                        <Break
+                            key={`break-${groupEnd}-${nextLesson.start.getTime()}`}
+                            startDate={new Date(groupEnd)}
+                            endDate={nextLesson.start}
+                        />,
+                    );
+                }
+            });
+
+            return (
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    contentContainerClassName="flex-col gap-2 pb-[200] mb-4"
+                >
+                    {lessonsBlocks}
+                </ScrollView>
+            );
+        },
+        [lessonsCache],
+    );
 
     const changeCurrentDate = useCallback((_date: Date) => {
         // isUpdatingDateRef.current = true;
@@ -257,7 +322,7 @@ export default function ScheduleScreen() {
                 }}
             >
                 <View key={`prev-${prevDate.toISOString()}`}>{renderLessonsForDate(prevDate)}</View>
-                <View key={`curr-${date.toISOString()}`}>{renderLessonsForDate(date)}</View>
+                <View key={`curr-${date.toISOString()}`}>{renderLessonsForDate(date, true)}</View>
                 <View key={`next-${nextDate.toISOString()}`}>{renderLessonsForDate(nextDate)}</View>
             </PagerView>
         </View>

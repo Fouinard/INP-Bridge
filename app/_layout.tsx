@@ -1,5 +1,6 @@
 import BottomNavBar from "@/components/BottomNavBar";
 import { StartupProvider } from "@/components/contexts/StartupContext";
+import { LessonsProvider } from "@/components/contexts/LessonsContext";
 import { StorageManager } from "@/services/storage";
 import "@/styles/global.css";
 import { toastConfig } from "@/styles/ToastsStyle";
@@ -52,9 +53,10 @@ export default function RootLayout() {
 
     return (
         <StartupProvider onReady={() => SplashScreen.hideAsync()}>
+            <LessonsProvider>
                 <View className="flex-1 max-w-screen" style={{ backgroundColor: "#121212" }}>
-                    <Stack 
-                        screenOptions={{ 
+                    <Stack
+                        screenOptions={{
                             headerShown: false,
                             contentStyle: { backgroundColor: "#121212" },
                         }}
@@ -63,6 +65,7 @@ export default function RootLayout() {
                     <BottomNavBar />
                     <Toast config={toastConfig} />
                 </View>
+            </LessonsProvider>
         </StartupProvider>
     );
 }
