@@ -8,7 +8,8 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "build:android:arm-v8a": "npx expo prebuild && cd android && gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a && cd .."
   },
   "dependencies": {
     "@expo/ui": "~57.0.16",
